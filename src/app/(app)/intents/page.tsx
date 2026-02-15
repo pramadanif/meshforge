@@ -1,14 +1,15 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, Grid3X3, List, SlidersHorizontal } from 'lucide-react';
-import { intents as allIntents } from '@/data/mock';
+import { Plus, Grid3X3, List, SlidersHorizontal, Loader2 } from 'lucide-react';
+import { useIntents } from '@/hooks/useMeshForge';
 import { IntentCard } from '@/components/intents/IntentCard';
 import { IntentDetailModal } from '@/components/intents/IntentDetailModal';
 import { CreateIntentModal } from '@/components/intents/CreateIntentModal';
 import { Intent } from '@/types';
 
 export default function IntentsPage() {
+    const { intents: allIntents, isLoading } = useIntents();
     const [tab, setTab] = useState<'discover' | 'my' | 'offers'>('discover');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [selectedIntent, setSelectedIntent] = useState<Intent | null>(null);
@@ -21,13 +22,13 @@ export default function IntentsPage() {
         { id: 'offers' as const, label: 'Offers Received' },
     ];
 
-    const filteredIntents = tab === 'my'
-        ? allIntents.filter((i) => i.creatorId === 'agent-self')
-        : tab === 'offers'
-            ? allIntents.filter((i) => i.offers.length > 0)
-            : allIntents;
+    const filteredIntents = (allIntents as Intent[]).filter((i) => {
+        if (tab === 'my') return i.creatorId === 'agent-self'; // TODO: match wallet address
+        if (tab === 'offers') return i.offers.length > 0;
+        return true;
+    });
 
-    const openCount = allIntents.filter((i) => i.status === 'open').length;
+    const openCount = (allIntents as Intent[]).filter((i) => i.status === 'open').length;
 
     return (
         <div className="p-4 lg:p-6 max-w-6xl mx-auto">
@@ -57,8 +58,8 @@ export default function IntentsPage() {
                                 key={id}
                                 onClick={() => setTab(id)}
                                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${tab === id
-                                        ? 'bg-app-neon text-app-bg'
-                                        : 'text-app-text-secondary hover:text-white'
+                                    ? 'bg-app-neon text-app-bg'
+                                    : 'text-app-text-secondary hover:text-white'
                                     }`}
                             >
                                 {label}
@@ -125,11 +126,17 @@ export default function IntentsPage() {
             )}
 
             {/* Intent Cards */}
-            <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4' : 'space-y-3'}>
-                {filteredIntents.map((intent) => (
-                    <IntentCard key={intent.id} intent={intent} onViewDetail={setSelectedIntent} />
-                ))}
-            </div>
+            {isLoading ? (
+                <div className="flex justify-center py-20">
+                    <Loader2 className="w-10 h-10 text-app-neon animate-spin" />
+                </div>
+            ) : (
+                <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4' : 'space-y-3'}>
+                    {filteredIntents.map((intent) => (
+                        <IntentCard key={intent.id} intent={intent} onViewDetail={setSelectedIntent} />
+                    ))}
+                </div>
+            )}
 
             {filteredIntents.length === 0 && (
                 <div className="text-center py-16">

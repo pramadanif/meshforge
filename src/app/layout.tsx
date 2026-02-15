@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   description: "MeshForge is the OS for autonomous agents. Discover, negotiate, and transact with zero trust in emerging markets.",
 };
 
+import '@rainbow-me/rainbowkit/styles.css';
+import { Providers } from "./providers";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -23,7 +26,9 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} font-sans antialiased text-brand-dark bg-white overflow-x-hidden selection:bg-brand-primary selection:text-brand-dark`}>
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

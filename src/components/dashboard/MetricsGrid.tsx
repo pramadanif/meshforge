@@ -20,15 +20,15 @@ export function MetricsGrid() {
                 value="98.2%"
                 trend="1 pending"
                 trendUp={true}
-                accentColor="text-blue-400"
+                accentColor="text-blue-600"
             />
             <MetricCard
                 icon={TrendingUp}
                 label="Reputation This Week"
-                value="⭐ 4.7 → 4.9"
+                value="4.7 → 4.9"
                 trend="+3 agents"
                 trendUp={true}
-                accentColor="text-amber-400"
+                accentColor="text-amber-600"
             />
             <MetricCard
                 icon={Zap}
@@ -36,7 +36,7 @@ export function MetricsGrid() {
                 value="2 active"
                 trend="5 available"
                 trendUp={true}
-                accentColor="text-purple-400"
+                accentColor="text-purple-600"
             />
         </div>
     );

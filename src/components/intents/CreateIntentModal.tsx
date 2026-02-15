@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
-import { ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
+import { ArrowRight, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react';
+import { useMeshForge } from '@/hooks/useMeshForge';
 
 interface CreateIntentModalProps {
     isOpen: boolean;
@@ -21,9 +22,24 @@ export function CreateIntentModal({ isOpen, onClose }: CreateIntentModalProps) {
     });
     const [submitted, setSubmitted] = useState(false);
 
+    const { createIntent, hash, isPending, error } = useMeshForge();
+
     const handleNext = () => step < 4 && setStep(step + 1);
     const handleBack = () => step > 1 && setStep(step - 1);
-    const handleBroadcast = () => setSubmitted(true);
+    const handleBroadcast = async () => {
+        try {
+            await createIntent(
+                formData.description, // title (using desc as title for now or vice versa)
+                formData.description,
+                formData.amount,
+                Number(formData.deadline),
+                'General'
+            );
+            setSubmitted(true);
+        } catch (e) {
+            console.error(e);
+        }
+    };
     const handleReset = () => {
         setStep(1);
         setSubmitted(false);
@@ -31,27 +47,25 @@ export function CreateIntentModal({ isOpen, onClose }: CreateIntentModalProps) {
         onClose();
     };
 
-    if (submitted) {
+    if (submitted || hash) {
         return (
             <Modal isOpen={isOpen} onClose={handleReset} title="Intent Broadcast" size="md">
                 <div className="text-center py-8 space-y-4">
                     <div className="w-16 h-16 bg-app-neon/20 rounded-full flex items-center justify-center mx-auto">
                         <CheckCircle className="w-8 h-8 text-app-neon" />
                     </div>
-                    <h3 className="text-xl font-bold text-white">✅ Intent Broadcast!</h3>
+                    <h3 className="text-xl font-bold text-white">✅ Transaction Sent!</h3>
                     <p className="text-sm text-app-text-secondary max-w-sm mx-auto">
-                        Your intent is now in the pool. Agents will see it immediately.
+                        Your intent is being created on Celo Alfajores.
                     </p>
-                    <div className="bg-white/[0.03] rounded-xl p-3 border border-app-border/50 inline-block">
-                        <p className="text-xs text-app-text-secondary">Intent ID: <code className="text-app-neon font-mono">0x7f8a...3e21</code></p>
-                        <p className="text-xs text-app-text-secondary mt-1">Pool position: <span className="text-white font-semibold">#12</span></p>
-                    </div>
+                    {hash && (
+                        <div className="bg-white/[0.03] rounded-xl p-3 border border-app-border/50 inline-block">
+                            <p className="text-xs text-app-text-secondary">Tx Hash: <code className="text-app-neon font-mono">{hash.slice(0, 10)}...</code></p>
+                        </div>
+                    )}
                     <div className="flex justify-center gap-3 pt-4">
-                        <button className="px-5 py-2.5 bg-app-neon text-app-bg font-bold text-sm rounded-xl hover:bg-white transition-colors">
-                            View in Pool
-                        </button>
-                        <button onClick={handleReset} className="px-5 py-2.5 bg-white/5 border border-app-border text-white font-bold text-sm rounded-xl hover:bg-white/10 transition-colors">
-                            Close
+                        <button onClick={handleReset} className="px-5 py-2.5 bg-app-neon text-app-bg font-bold text-sm rounded-xl hover:bg-white transition-colors">
+                            Close & Refresh
                         </button>
                     </div>
                 </div>
@@ -119,8 +133,8 @@ export function CreateIntentModal({ isOpen, onClose }: CreateIntentModalProps) {
                                     key={t}
                                     onClick={() => setFormData({ ...formData, deadline: t })}
                                     className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${formData.deadline === t
-                                            ? 'bg-app-neon text-app-bg'
-                                            : 'bg-white/5 border border-app-border text-app-text-secondary hover:text-white hover:bg-white/10'
+                                        ? 'bg-app-neon text-app-bg'
+                                        : 'bg-white/5 border border-app-border text-app-text-secondary hover:text-white hover:bg-white/10'
                                         }`}
                                 >
                                     {t} min
@@ -163,8 +177,8 @@ export function CreateIntentModal({ isOpen, onClose }: CreateIntentModalProps) {
                                         setFormData({ ...formData, skills });
                                     }}
                                     className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${formData.skills.includes(skill)
-                                            ? 'bg-app-neon/20 text-app-neon border border-app-neon/30'
-                                            : 'bg-white/5 border border-app-border text-app-text-secondary hover:text-white'
+                                        ? 'bg-app-neon/20 text-app-neon border border-app-neon/30'
+                                        : 'bg-white/5 border border-app-border text-app-text-secondary hover:text-white'
                                         }`}
                                 >
                                     {formData.skills.includes(skill) ? '☑ ' : '☐ '}{skill}
@@ -244,8 +258,8 @@ export function CreateIntentModal({ isOpen, onClose }: CreateIntentModalProps) {
                         Next <ArrowRight className="w-4 h-4" />
                     </button>
                 ) : (
-                    <button onClick={handleBroadcast} className="flex items-center gap-2 px-5 py-2.5 bg-app-neon text-app-bg font-bold text-sm rounded-xl hover:bg-white transition-colors">
-                        🚀 Broadcast
+                    <button onClick={handleBroadcast} disabled={isPending} className="flex items-center gap-2 px-5 py-2.5 bg-app-neon text-app-bg font-bold text-sm rounded-xl hover:bg-white transition-colors disabled:opacity-50">
+                        {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : '🚀 Broadcast'}
                     </button>
                 )}
             </div>

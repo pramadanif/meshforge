@@ -1,12 +1,27 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Wallet, Star, CheckCircle, Flame, Copy, ExternalLink, Edit, Save } from 'lucide-react';
+import { User, Wallet, Star, Shield, Activity, Clock, Award, TrendingUp, Settings, LogOut, Copy, ExternalLink, CheckCircle, Flame } from 'lucide-react';
+import { useAccount, useBalance, useDisconnect } from 'wagmi';
+import { useAgentReputation } from '@/hooks/useMeshForge';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { currentUser, currentUserReputation, transactions, intents } from '@/data/mock';
+import { currentUser, transactions, intents, currentUserReputation } from '@/data/mock';
+import { formatEther } from 'viem';
 
 export default function AccountPage() {
+    const { address, isConnected } = useAccount();
+    const { data: balance } = useBalance({ address });
+    const { disconnect } = useDisconnect();
+    const { reputation, totalVolume, completedIntents } = useAgentReputation(address as `0x${string}`);
+
     const [activeTab, setActiveTab] = useState<'overview' | 'intents' | 'transactions' | 'settings'>('overview');
+
+    // Use on-chain data if connected, otherwise fallback or show empty
+    const displayAddress = address || 'Not Connected';
+    const displayBalance = balance ? formatEther(balance.value).slice(0, 6) : '0';
+    const displayReputation = isConnected ? reputation : currentUser.reputation;
+    const displayCompleted = isConnected ? completedIntents : currentUser.completedIntents;
+    const displayVolume = isConnected ? totalVolume : currentUser.totalVolume;
 
     const tabs = [
         { id: 'overview' as const, label: 'Overview' },
@@ -16,8 +31,69 @@ export default function AccountPage() {
     ];
 
     return (
-        <div className="p-4 lg:p-6 max-w-4xl mx-auto">
-            <h1 className="text-2xl font-display font-bold text-white mb-6">My Account</h1>
+        <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-8">
+            {/* Header / Profile Card */}
+            <div className="bg-gradient-to-br from-brand-dark to-brand-darker rounded-3xl p-6 lg:p-8 text-white shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-96 h-96 bg-brand-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+
+                <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center md:items-start">
+                    {/* Avatar */}
+                    <div className="w-24 h-24 lg:w-32 lg:h-32 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl">
+                        <span className="text-4xl lg:text-5xl font-bold">{address ? 'A' : '?'}</span>
+                    </div>
+
+                    <div className="flex-1 text-center md:text-left space-y-4">
+                        <div>
+                            <h1 className="text-2xl lg:text-3xl font-bold font-display">{address ? `Agent ${address.slice(0, 6)}` : 'Guest User'}</h1>
+                            <div className="flex items-center justify-center md:justify-start gap-2 text-brand-surface/80 mt-1">
+                                <Wallet className="w-4 h-4" />
+                                <code className="font-mono text-sm">{displayAddress}</code>
+                                <button className="hover:text-white transition-colors"><Copy className="w-3.5 h-3.5" /></button>
+                                <button className="hover:text-white transition-colors"><ExternalLink className="w-3.5 h-3.5" /></button>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-wrap justify-center md:justify-start gap-6">
+                            <div className="flex items-center gap-2 bg-white/5 rounded-full px-4 py-2 border border-white/10">
+                                <div className="p-1 bg-brand-primary/20 rounded-full">
+                                    <TrendingUp className="w-4 h-4 text-brand-primary" />
+                                </div>
+                                <div>
+                                    <p className="text-xs text-brand-surface/70">Balance</p>
+                                    <p className="font-bold">{displayBalance} CELO</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2 bg-white/5 rounded-full px-4 py-2 border border-white/10">
+                                <div className="p-1 bg-amber-500/20 rounded-full">
+                                    <Star className="w-4 h-4 text-amber-500" />
+                                </div>
+                                <div>
+                                    <p className="text-xs text-brand-surface/70">Reputation</p>
+                                    <p className="font-bold">{Number(displayReputation).toFixed(1)} / 5.0</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2 bg-white/5 rounded-full px-4 py-2 border border-white/10">
+                                <div className="p-1 bg-purple-500/20 rounded-full">
+                                    <Shield className="w-4 h-4 text-purple-500" />
+                                </div>
+                                <div>
+                                    <p className="text-xs text-brand-surface/70">Trust Score</p>
+                                    <p className="font-bold">98%</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                        <button className="p-2.5 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 transition-colors">
+                            <Settings className="w-5 h-5" />
+                        </button>
+                        <button onClick={() => disconnect()} className="p-2.5 rounded-xl bg-red-500/20 border border-red-500/30 text-red-500 hover:bg-red-500/30 transition-colors">
+                            <LogOut className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             {/* Tabs */}
             <div className="flex gap-1 bg-white/5 rounded-xl p-1 mb-6 overflow-x-auto">
@@ -36,46 +112,21 @@ export default function AccountPage() {
             {/* Overview Tab */}
             {activeTab === 'overview' && (
                 <div className="space-y-6">
-                    {/* Wallet Card */}
-                    <div className="app-card p-5">
-                        <div className="flex items-start justify-between mb-3">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2.5 rounded-xl bg-app-neon/10">
-                                    <Wallet className="w-5 h-5 text-app-neon" />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-app-text-secondary font-medium">Connected Wallet</p>
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <code className="text-sm text-white font-mono">{currentUser.walletAddress}</code>
-                                        <button className="text-app-text-secondary hover:text-white transition-colors"><Copy className="w-3.5 h-3.5" /></button>
-                                    </div>
-                                </div>
-                            </div>
-                            <a href="https://docs.celo.org/build-on-celo/build-with-ai/overview" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 flex items-center gap-1 text-xs">
-                                Celo Docs <ExternalLink className="w-3 h-3" />
-                            </a>
-                        </div>
-                        <div className="bg-white/[0.03] rounded-xl p-4 border border-app-border/50">
-                            <p className="text-xs text-app-text-secondary mb-1">Balance</p>
-                            <p className="text-2xl font-bold text-app-neon">{currentUser.balanceCUSD} cUSD</p>
-                        </div>
-                    </div>
-
                     {/* Key Stats */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                         <div className="app-card p-4 text-center">
                             <Star className="w-5 h-5 text-amber-400 mx-auto mb-2" />
-                            <p className="text-lg font-bold text-white">⭐ {currentUser.reputation}</p>
+                            <p className="text-lg font-bold text-white">⭐ {Number(displayReputation).toFixed(1)}</p>
                             <p className="text-xs text-app-text-secondary">Reputation</p>
                         </div>
                         <div className="app-card p-4 text-center">
                             <CheckCircle className="w-5 h-5 text-app-neon mx-auto mb-2" />
-                            <p className="text-lg font-bold text-white">{currentUser.completedIntents}</p>
+                            <p className="text-lg font-bold text-white">{displayCompleted}</p>
                             <p className="text-xs text-app-text-secondary">Completed</p>
                         </div>
                         <div className="app-card p-4 text-center">
                             <Wallet className="w-5 h-5 text-blue-400 mx-auto mb-2" />
-                            <p className="text-lg font-bold text-white">${currentUser.totalVolume.toLocaleString()}</p>
+                            <p className="text-lg font-bold text-white">${Number(displayVolume).toLocaleString()}</p>
                             <p className="text-xs text-app-text-secondary">Total Volume</p>
                         </div>
                         <div className="app-card p-4 text-center">
@@ -90,8 +141,6 @@ export default function AccountPage() {
                         <h3 className="text-sm font-bold text-white mb-4">Reputation Details</h3>
                         <div className="space-y-3">
                             {[
-                                { label: 'Economic Volume', value: currentUserReputation.economicVolume, extra: `$${currentUser.totalVolume.toLocaleString()} (↗ +$340 this week)` },
-                                { label: 'Success Rate', value: currentUserReputation.successRate, extra: `${currentUser.successRate}% (streak: ${currentUser.activityStreak} days)` },
                                 { label: 'Recency', value: currentUserReputation.recency, extra: `Last active ${currentUser.lastActive}` },
                                 { label: 'Human Attestation', value: currentUserReputation.humanAttestation, extra: `${currentUser.endorsements?.reduce((a: number, e: { count: number }) => a + e.count, 0) || 0} endorsements` },
                             ].map(({ label, value, extra }) => (

@@ -43,3 +43,44 @@ Keduanya dapat +37 reputation points.
 Total waktu: 47 detik. Zero human. Real money moved."Judge "Holy Shit" MomentKetika judge lihat tiga agent dari tiga tim berbeda (kamu + dua dummy agent) secara real-time koordinasi di testnet Celo, tutup loop ekonomi, dan update reputation secara onchain — mereka bakal sadar ini bukan hackathon project.
 Ini adalah foundational layer untuk agent economy 2026.
 
+Layer
+Tech Stack (Paling Cepat + Powerful)
+Alasan Dipilih
+Smart Contracts
+Solidity 0.8.26 + Foundry (bukan Hardhat)
+Super cepat compile & test
+Agent Identity
+ERC-8004 (official registry) + Soulbound metadata
+Wajib, judge akan cek ini
+Intent & Memory
+Onchain Intent Pool (mapping + events) + Merkle Tree untuk scalability
+Pure onchain memory
+Discovery Engine
+Onchain event listener + lightweight offchain indexer (Supabase + Redis)
+Fast query tanpa gas mahal
+Coordination
+Negotiation & Matching Smart Contract
+Fully autonomous
+Payments
+x402 (Thirdweb) + Celo native gasless
+Core requirement hackathon
+Human Fallback
+SelfClaw + SelfProtocol ZK verification
+Only when needed
+AI Agent Framework
+LangGraph (LangChain) + Claude 3.5 Sonnet / Groq Llama-3.3-70B
+State-of-the-art agent orchestration
+Celo Integration
+Celo SDK + viem + wagmi + Thirdweb SDK
+Native & battle-tested
+Frontend (Demo)
+Next.js 15 (App Router) + Tailwind + shadcn/ui + Wagmi
+Clean showcase
+Deployment
+Celo Alfajores testnet (bisa mainnet kalau mau)
+Gas murah
+Monitoring
+8004scan.io + Celo Explorer + custom dashboard
+Onchain proof
+
+
