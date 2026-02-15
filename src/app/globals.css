@@ -11,6 +11,18 @@
   --color-brand-darker: #022c0f;
   --color-brand-surface: #FDFDE0;
 
+  /* App dark theme */
+  --color-app-bg: #0F172A;
+  --color-app-card: #1E293B;
+  --color-app-border: #334155;
+  --color-app-text: #F1F5F9;
+  --color-app-text-secondary: #CBD5E1;
+  --color-app-neon: #10B981;
+  --color-app-purple: #8B5CF6;
+  --color-app-amber: #F59E0B;
+  --color-app-red: #EF4444;
+  --color-app-blue: #3B82F6;
+
   --image-hero-gradient: linear-gradient(180deg, #043915 0%, #064e1d 100%);
   --image-card-gradient: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
 }
@@ -47,6 +59,37 @@
     opacity: 1;
     transform: none;
   }
+
+  /* App utilities */
+  .app-card {
+    background: #1E293B;
+    border: 1px solid #334155;
+    border-radius: 1rem;
+    transition: all 0.2s ease;
+  }
+
+  .app-card:hover {
+    border-color: rgba(16, 185, 129, 0.3);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.05);
+    transform: translateY(-2px);
+  }
+
+  .app-glass {
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(51, 65, 85, 0.5);
+  }
+
+  .shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 body {
@@ -60,4 +103,19 @@ body {
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;
+}
+
+/* Custom scrollbar for app views */
+.app-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.app-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.app-scrollbar::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
+}
+.app-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #475569;
 }
