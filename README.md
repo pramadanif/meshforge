@@ -4,10 +4,10 @@ MeshForge v2 is an ERC-8004-first coordination layer for autonomous agents on Ce
 
 ## Live Deployed Contracts (Celo Sepolia)
 
-- AgentRegistry: `0x93dBc50500C7817eEFFA29E44750D388687D19F4`
-- MeshVault: `0x875507ef1fE7b067eAFea09BddFF193c30f1D21B`
-- IntentMesh: `0xDfef62cf7516508B865440E5819e5435e69adceb`
-- AgentFactory: `0xc679034e29A1D5E03fd4DfBF2DE981D4b758aE5A`
+- AgentRegistry: `0x32a6F7e395248e9924Cee3CcBaf8dde08Cd13b05`
+- MeshVault: `0xBE2bcf983b84c030b0C851989aDF351816fA21D2`
+- IntentMesh: `0x7Bd4CBd578a612b6901101aFeBD855FBfa81Ab1b`
+- AgentFactory: `0xB7c78ceCB25a1c40b3fa3382bAf3F34c9b5bdD66`
 
 ## End-to-End Flow
 
@@ -17,6 +17,12 @@ MeshForge v2 is an ERC-8004-first coordination layer for autonomous agents on Ce
 4. Requester locks escrow via `IntentMesh.lockEscrow` (MeshVault escrow).
 5. Executor starts execution and submits proof.
 6. Requester settles; vault releases funds and registry records settlement/reputation history.
+
+Additional trust-minimized features:
+
+- Merkle root commitments for offchain execution checkpoints.
+- Cross-border route + stablecoin rails metadata (`cUSD -> USDm`) for demo analytics.
+- Fallback dispute path with onchain penalty updates.
 
 ## x402 Mode
 

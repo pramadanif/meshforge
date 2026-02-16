@@ -9,7 +9,7 @@ import {
 import { privateKeyToAccount } from 'viem/accounts';
 import { celoSepolia } from 'viem/chains';
 
-const intentMeshAddress = (process.env.INTENT_MESH_ADDRESS ?? '0xDfef62cf7516508B865440E5819e5435e69adceb') as `0x${string}`;
+const intentMeshAddress = (process.env.INTENT_MESH_ADDRESS ?? '0x7Bd4CBd578a612b6901101aFeBD855FBfa81Ab1b') as `0x${string}`;
 const relayerPrivateKey = process.env.RELAYER_PRIVATE_KEY as `0x${string}`;
 const x402Endpoint = process.env.THIRDWEB_X402_ENDPOINT ?? process.env.X402_ENDPOINT;
 const x402ApiKey = process.env.THIRDWEB_X402_API_KEY ?? process.env.X402_API_KEY;
@@ -41,6 +41,49 @@ const intentMeshAbi = [
     inputs: [{ name: 'intentId', type: 'uint256' }],
     outputs: [],
   },
+  {
+    type: 'function',
+    name: 'commitMerkleRoot',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'intentId', type: 'uint256' },
+      { name: 'merkleRoot', type: 'bytes32' },
+      { name: 'step', type: 'uint256' },
+    ],
+    outputs: [],
+  },
+  {
+    type: 'function',
+    name: 'setCrossBorderRoute',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'intentId', type: 'uint256' },
+      { name: 'sourceRegion', type: 'uint256' },
+      { name: 'destinationRegion', type: 'uint256' },
+    ],
+    outputs: [],
+  },
+  {
+    type: 'function',
+    name: 'openDispute',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'intentId', type: 'uint256' },
+      { name: 'reason', type: 'string' },
+    ],
+    outputs: [],
+  },
+  {
+    type: 'function',
+    name: 'setCrossBorderStablecoins',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'intentId', type: 'uint256' },
+      { name: 'sourceStable', type: 'string' },
+      { name: 'destinationStable', type: 'string' },
+    ],
+    outputs: [],
+  },
 ] as const;
 
 const account = privateKeyToAccount(relayerPrivateKey);
@@ -56,11 +99,13 @@ const walletClient = createWalletClient({
   transport: http(process.env.CELO_RPC_URL ?? 'https://forno.celo-sepolia.celo-testnet.org'),
 });
 
-async function submitMetaTransaction(functionName: 'lockEscrow' | 'startExecution' | 'settle', intentId: bigint) {
+type RelayerAction = 'lockEscrow' | 'startExecution' | 'settle' | 'commitMerkleRoot' | 'setCrossBorderRoute' | 'setCrossBorderStablecoins' | 'openDispute';
+
+async function submitMetaTransaction(functionName: RelayerAction, args: readonly unknown[]) {
   const data = encodeFunctionData({
     abi: intentMeshAbi,
     functionName,
-    args: [intentId],
+    args: args as any,
   });
 
   if (x402Endpoint && x402ApiKey) {
@@ -74,7 +119,7 @@ async function submitMetaTransaction(functionName: 'lockEscrow' | 'startExecutio
         chainId: celoSepolia.id,
         to: intentMeshAddress,
         functionName,
-        intentId: intentId.toString(),
+        intentId: String(args[0] ?? ''),
         data,
         fromAgent: account.address,
       }),
@@ -108,7 +153,7 @@ async function submitMetaTransaction(functionName: 'lockEscrow' | 'startExecutio
     address: intentMeshAddress,
     abi: intentMeshAbi,
     functionName,
-    args: [intentId],
+    args: args as any,
     account,
   });
 
@@ -117,23 +162,37 @@ async function submitMetaTransaction(functionName: 'lockEscrow' | 'startExecutio
 }
 
 export async function lockEscrow(intentId: number) {
-  return submitMetaTransaction('lockEscrow', BigInt(intentId));
+  return submitMetaTransaction('lockEscrow', [BigInt(intentId)]);
 }
 
 export async function startExecution(intentId: number) {
-  return submitMetaTransaction('startExecution', BigInt(intentId));
+  return submitMetaTransaction('startExecution', [BigInt(intentId)]);
 }
 
 export async function settle(intentId: number) {
-  return submitMetaTransaction('settle', BigInt(intentId));
+  return submitMetaTransaction('settle', [BigInt(intentId)]);
+}
+
+export async function commitMerkleRoot(intentId: number, merkleRoot: `0x${string}`, step: number) {
+  return submitMetaTransaction('commitMerkleRoot', [BigInt(intentId), merkleRoot, BigInt(step)]);
+}
+
+export async function setCrossBorderRoute(intentId: number, sourceRegion: number, destinationRegion: number) {
+  return submitMetaTransaction('setCrossBorderRoute', [BigInt(intentId), BigInt(sourceRegion), BigInt(destinationRegion)]);
+}
+
+export async function openDispute(intentId: number, reason: string) {
+  return submitMetaTransaction('openDispute', [BigInt(intentId), reason]);
 }
 
 async function runCli() {
-  const action = process.argv[2] as 'lockEscrow' | 'startExecution' | 'settle' | undefined;
+  const action = process.argv[2] as RelayerAction | undefined;
   const intentIdArg = process.argv[3];
+  const arg1 = process.argv[4];
+  const arg2 = process.argv[5];
 
   if (!action || !intentIdArg) {
-    console.log('Usage: tsx relayer.ts <lockEscrow|startExecution|settle> <intentId>');
+    console.log('Usage: tsx relayer.ts <lockEscrow|startExecution|settle|commitMerkleRoot|setCrossBorderRoute|setCrossBorderStablecoins|openDispute> <intentId> [arg1] [arg2]');
     process.exit(0);
   }
 
@@ -142,7 +201,25 @@ async function runCli() {
     throw new Error('intentId must be a number');
   }
 
-  const receipt = await submitMetaTransaction(action, BigInt(intentId));
+  let args: readonly unknown[] = [BigInt(intentId)];
+  if (action === 'commitMerkleRoot') {
+    if (!arg1 || !arg2) throw new Error('commitMerkleRoot requires <merkleRoot> <step>');
+    args = [BigInt(intentId), arg1 as `0x${string}`, BigInt(Number(arg2))];
+  }
+  if (action === 'setCrossBorderRoute') {
+    if (!arg1 || !arg2) throw new Error('setCrossBorderRoute requires <sourceRegion> <destinationRegion>');
+    args = [BigInt(intentId), BigInt(Number(arg1)), BigInt(Number(arg2))];
+  }
+  if (action === 'openDispute') {
+    if (!arg1) throw new Error('openDispute requires <reason>');
+    args = [BigInt(intentId), arg1];
+  }
+  if (action === 'setCrossBorderStablecoins') {
+    if (!arg1 || !arg2) throw new Error('setCrossBorderStablecoins requires <sourceStable> <destinationStable>');
+    args = [BigInt(intentId), arg1, arg2];
+  }
+
+  const receipt = await submitMetaTransaction(action, args);
   console.log(`${action} confirmed in tx ${receipt.transactionHash}`);
 }
 

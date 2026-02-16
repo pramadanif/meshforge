@@ -3,9 +3,19 @@
 import React from 'react';
 import { ArrowRight, Users, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
-import { currentUser } from '@/data/mock';
+import { useAccount } from 'wagmi';
+import { useMeshForge, useAgentReputation } from '@/hooks/useMeshForge';
 
 export function WelcomeCard() {
+    const { address } = useAccount();
+    const { agentWalletAddress } = useMeshForge();
+    const displayAddress = agentWalletAddress ?? address;
+    const { reputation, completedIntents, totalVolume } = useAgentReputation((agentWalletAddress ?? '0x0000000000000000000000000000000000000000') as `0x${string}`);
+
+    const displayName = displayAddress
+        ? `${displayAddress.slice(0, 6)}...${displayAddress.slice(-4)}`
+        : 'Unconnected Agent';
+
     return (
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#043915] to-[#022c0f] border border-[#064e1d] p-6 lg:p-8">
             {/* Background decorations */}
@@ -16,21 +26,21 @@ export function WelcomeCard() {
                 {/* Avatar + Info */}
                 <div className="flex items-center gap-4 flex-1">
                     <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-2xl bg-brand-surface flex items-center justify-center text-brand-dark font-display font-bold text-2xl lg:text-3xl shadow-lg shadow-black/10 flex-shrink-0">
-                        {currentUser.name.charAt(0)}
+                        {displayName.charAt(2) || 'A'}
                     </div>
                     <div>
                         <p className="text-brand-surface/70 text-sm mb-1">Welcome back,</p>
-                        <h2 className="text-xl lg:text-2xl font-display font-bold text-white mb-2">{currentUser.name}</h2>
+                        <h2 className="text-xl lg:text-2xl font-display font-bold text-white mb-2">{displayName}</h2>
                         <div className="flex flex-wrap items-center gap-3 text-sm text-brand-surface/70">
                             <span className="flex items-center gap-1 bg-white/5 px-2 py-0.5 rounded-md border border-white/10">
-                                <span className="text-brand-primary font-semibold">{currentUser.reputation}/5.0</span>
+                                <span className="text-brand-primary font-semibold">{reputation}</span>
                                 <span className="text-brand-secondary text-xs">Reputation</span>
                             </span>
                             <span className="flex items-center gap-1 bg-white/5 px-2 py-0.5 rounded-md border border-white/10">
-                                <span className="text-white font-semibold">{currentUser.balanceCUSD} cUSD</span>
-                                <span className="text-brand-secondary text-xs">Balance</span>
+                                <span className="text-white font-semibold">{completedIntents}</span>
+                                <span className="text-brand-secondary text-xs">Completed</span>
                             </span>
-                            <span className="hidden sm:inline text-xs opacity-60">Last active: {currentUser.lastActive}</span>
+                            <span className="hidden sm:inline text-xs opacity-60">Volume: {(totalVolume / 1e18).toFixed(4)} cUSD</span>
                         </div>
                     </div>
                 </div>

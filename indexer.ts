@@ -4,8 +4,8 @@ import { celoSepolia } from 'viem/chains';
 import { createClient as createRedisClient } from 'redis';
 import { prisma } from './src/lib/prisma';
 
-const intentMeshAddress = (process.env.INTENT_MESH_ADDRESS ?? '0xDfef62cf7516508B865440E5819e5435e69adceb') as `0x${string}`;
-const agentRegistryAddress = (process.env.AGENT_REGISTRY_ADDRESS ?? '0x93dBc50500C7817eEFFA29E44750D388687D19F4') as `0x${string}`;
+const intentMeshAddress = (process.env.INTENT_MESH_ADDRESS ?? '0x7Bd4CBd578a612b6901101aFeBD855FBfa81Ab1b') as `0x${string}`;
+const agentRegistryAddress = (process.env.AGENT_REGISTRY_ADDRESS ?? '0x32a6F7e395248e9924Cee3CcBaf8dde08Cd13b05') as `0x${string}`;
 
 if (!intentMeshAddress || !agentRegistryAddress) {
   throw new Error('Missing INTENT_MESH_ADDRESS or AGENT_REGISTRY_ADDRESS');
@@ -24,8 +24,15 @@ const events = {
   EscrowLocked: parseAbiItem('event EscrowLocked(uint256 indexed intentId, uint256 amount)'),
   ExecutionStarted: parseAbiItem('event ExecutionStarted(uint256 indexed intentId)'),
   ProofSubmitted: parseAbiItem('event ProofSubmitted(uint256 indexed intentId, bytes32 gpsHash, bytes32 photoHash)'),
+  MerkleRootCommitted: parseAbiItem('event MerkleRootCommitted(uint256 indexed intentId, bytes32 merkleRoot, uint256 indexed step)'),
+  OffchainStepVerified: parseAbiItem('event OffchainStepVerified(uint256 indexed intentId, bytes32 leaf, uint256 indexed step, bool valid)'),
+  DisputeOpened: parseAbiItem('event DisputeOpened(uint256 indexed intentId, uint256 indexed challengerAgentId, uint256 amount, string reason)'),
+  DisputeResolved: parseAbiItem('event DisputeResolved(uint256 indexed intentId, bool approved, uint256 penaltyPoints, string evidenceRef)'),
+  CrossBorderRouteSet: parseAbiItem('event CrossBorderRouteSet(uint256 indexed intentId, uint256 indexed sourceRegion, uint256 indexed destinationRegion)'),
+  CrossBorderStablecoinsSet: parseAbiItem('event CrossBorderStablecoinsSet(uint256 indexed intentId, string sourceStable, string destinationStable)'),
   SettlementReleased: parseAbiItem('event SettlementReleased(uint256 indexed intentId, uint256 amount, uint256 indexed executorAgentId)'),
   SettlementRecorded: parseAbiItem('event SettlementRecorded(uint256 indexed intentId, uint256 indexed agentId, uint256 value, uint256 timestamp)'),
+  ReputationPenalized: parseAbiItem('event ReputationPenalized(uint256 indexed agentId, uint256 penaltyPoints, string reason)'),
 } as const;
 
 type Lifecycle =
@@ -34,6 +41,8 @@ type Lifecycle =
   | 'ESCROW_LOCKED'
   | 'EXECUTION_STARTED'
   | 'PROOF_SUBMITTED'
+  | 'DISPUTE_OPENED'
+  | 'DISPUTE_RESOLVED'
   | 'SETTLED'
   | 'SETTLEMENT_RECORDED';
 
@@ -185,6 +194,101 @@ async function main() {
 
   client.watchEvent({
     address: intentMeshAddress,
+    event: events.MerkleRootCommitted,
+    onLogs: async (logs) => {
+      for (const log of logs) {
+        const args = log.args as { intentId: bigint; merkleRoot: `0x${string}`; step: bigint };
+        const intentId = Number(args.intentId);
+        await persistExecutionLog('MerkleRootCommitted', intentId, {
+          merkleRoot: args.merkleRoot,
+          step: Number(args.step),
+        }, log.transactionHash, log.blockNumber, log.logIndex);
+      }
+    },
+  });
+
+  client.watchEvent({
+    address: intentMeshAddress,
+    event: events.OffchainStepVerified,
+    onLogs: async (logs) => {
+      for (const log of logs) {
+        const args = log.args as { intentId: bigint; leaf: `0x${string}`; step: bigint; valid: boolean };
+        const intentId = Number(args.intentId);
+        await persistExecutionLog('OffchainStepVerified', intentId, {
+          leaf: args.leaf,
+          step: Number(args.step),
+          valid: args.valid,
+        }, log.transactionHash, log.blockNumber, log.logIndex);
+      }
+    },
+  });
+
+  client.watchEvent({
+    address: intentMeshAddress,
+    event: events.CrossBorderRouteSet,
+    onLogs: async (logs) => {
+      for (const log of logs) {
+        const args = log.args as { intentId: bigint; sourceRegion: bigint; destinationRegion: bigint };
+        const intentId = Number(args.intentId);
+        await persistExecutionLog('CrossBorderRouteSet', intentId, {
+          sourceRegion: Number(args.sourceRegion),
+          destinationRegion: Number(args.destinationRegion),
+        }, log.transactionHash, log.blockNumber, log.logIndex);
+      }
+    },
+  });
+
+  client.watchEvent({
+    address: intentMeshAddress,
+    event: events.CrossBorderStablecoinsSet,
+    onLogs: async (logs) => {
+      for (const log of logs) {
+        const args = log.args as { intentId: bigint; sourceStable: string; destinationStable: string };
+        const intentId = Number(args.intentId);
+        await persistExecutionLog('CrossBorderStablecoinsSet', intentId, {
+          sourceStable: args.sourceStable,
+          destinationStable: args.destinationStable,
+        }, log.transactionHash, log.blockNumber, log.logIndex);
+      }
+    },
+  });
+
+  client.watchEvent({
+    address: intentMeshAddress,
+    event: events.DisputeOpened,
+    onLogs: async (logs) => {
+      for (const log of logs) {
+        const args = log.args as { intentId: bigint; challengerAgentId: bigint; amount: bigint; reason: string };
+        const intentId = Number(args.intentId);
+        await upsertIntentExecutionState(intentId, 'DISPUTE_OPENED', log.transactionHash);
+        await persistExecutionLog('DisputeOpened', intentId, {
+          challengerAgentId: Number(args.challengerAgentId),
+          amount: args.amount.toString(),
+          reason: args.reason,
+        }, log.transactionHash, log.blockNumber, log.logIndex);
+      }
+    },
+  });
+
+  client.watchEvent({
+    address: intentMeshAddress,
+    event: events.DisputeResolved,
+    onLogs: async (logs) => {
+      for (const log of logs) {
+        const args = log.args as { intentId: bigint; approved: boolean; penaltyPoints: bigint; evidenceRef: string };
+        const intentId = Number(args.intentId);
+        await upsertIntentExecutionState(intentId, 'DISPUTE_RESOLVED', log.transactionHash);
+        await persistExecutionLog('DisputeResolved', intentId, {
+          approved: args.approved,
+          penaltyPoints: Number(args.penaltyPoints),
+          evidenceRef: args.evidenceRef,
+        }, log.transactionHash, log.blockNumber, log.logIndex);
+      }
+    },
+  });
+
+  client.watchEvent({
+    address: intentMeshAddress,
     event: events.SettlementReleased,
     onLogs: async (logs) => {
       for (const log of logs) {
@@ -219,7 +323,23 @@ async function main() {
     },
   });
 
-  console.log('Indexer started: watching IntentBroadcasted, IntentAccepted, EscrowLocked, ExecutionStarted, ProofSubmitted, SettlementReleased, SettlementRecorded');
+  client.watchEvent({
+    address: agentRegistryAddress,
+    event: events.ReputationPenalized,
+    onLogs: async (logs) => {
+      for (const log of logs) {
+        const args = log.args as { agentId: bigint; penaltyPoints: bigint; reason: string };
+        await persistExecutionLog('ReputationPenalized', 0, {
+          agentId: Number(args.agentId),
+          penaltyPoints: Number(args.penaltyPoints),
+          reason: args.reason,
+        }, log.transactionHash, log.blockNumber, log.logIndex);
+        await upsertAgentReputation(Number(args.agentId));
+      }
+    },
+  });
+
+  console.log('Indexer started: watching full lifecycle + Merkle + dispute + cross-border + reputation events');
 }
 
 main().catch(async (error) => {

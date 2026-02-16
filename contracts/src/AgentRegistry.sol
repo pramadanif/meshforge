@@ -25,6 +25,7 @@ contract AgentRegistry {
     mapping(uint256 => Agent) public agents;
     mapping(address => uint256) public agentOf;          // wallet → agentId
     mapping(uint256 => SettlementRecord[]) public settlements; // agentId → records
+    mapping(uint256 => uint256) public penaltyPoints;    // agentId → cumulative penalty points
 
     // Authorized callers (IntentMesh + AgentFactory)
     mapping(address => bool) public authorized;
@@ -33,6 +34,7 @@ contract AgentRegistry {
     // ─── Events ──────────────────────────────────────────────────────────
     event AgentRegistered(uint256 indexed agentId, address indexed wallet, address indexed controller, string metadataURI);
     event SettlementRecorded(uint256 indexed intentId, uint256 indexed agentId, uint256 value, uint256 timestamp);
+    event ReputationPenalized(uint256 indexed agentId, uint256 penaltyPoints, string reason);
     event AuthorizedCaller(address indexed caller, bool status);
 
     modifier onlyOwner() {
@@ -101,6 +103,20 @@ contract AgentRegistry {
         emit SettlementRecorded(intentId, executorAgentId, value, block.timestamp);
     }
 
+    /// @notice Apply a dispute penalty to an agent reputation
+    /// @dev Callable only by authorized contracts (e.g., IntentMesh fallback flow)
+    function penalizeAgent(
+        uint256 agentId,
+        uint256 points,
+        string calldata reason
+    ) external onlyAuthorized {
+        require(agents[agentId].wallet != address(0), "Agent does not exist");
+        require(points > 0, "Invalid points");
+
+        penaltyPoints[agentId] += points;
+        emit ReputationPenalized(agentId, points, reason);
+    }
+
     /// @notice Derive reputation from settlement history — COMPUTED, not stored
     /// @dev Formula: sum(value) * count * recencyMultiplier / 1e18
     function getReputation(uint256 agentId) external view returns (uint256) {
@@ -124,7 +140,12 @@ contract AgentRegistry {
         uint256 completionScore = len * 10;             // 10 points per completion
         uint256 recencyBonus = recentCount * 5;         // 5 bonus per recent
 
-        return volumeScore + completionScore + recencyBonus;
+        uint256 gross = volumeScore + completionScore + recencyBonus;
+        uint256 penalty = penaltyPoints[agentId];
+        if (penalty >= gross) {
+            return 0;
+        }
+        return gross - penalty;
     }
 
     /// @notice Get agent profile by wallet address

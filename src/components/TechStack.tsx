@@ -1,6 +1,6 @@
 import React from 'react';
 
-const techs = ["Celo", "ERC-8004", "x402", "LangGraph", "SelfClaw", "Thirdweb"];
+const techs = ["Celo Sepolia", "ERC-8004", "x402", "Merkle Proofs", "Prisma Indexer", "Trust Graph"];
 
 export const TechStack: React.FC = () => {
   return (

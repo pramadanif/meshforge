@@ -90,28 +90,28 @@ Onchain proof
 1. Onchain Audit & Verifiability (core)
 	- Intent, accept, escrow, execution, proof, settlement, settlement-recorded sudah emitted onchain.
 	- Indexer sudah persist semua lifecycle event di Postgres (Prisma) + execution log.
+	- Merkle root commit + offchain step verification event sudah tersedia onchain.
 2. SDK + Developer Examples (core DX)
 	- SDK minimal untuk register/broadcast/accept intent tersedia.
 	- Contoh frontend + backend integration sudah ada.
 3. Real-Time Execution Visibility (core)
 	- Event-driven UI sudah subscribe lifecycle via useWatchContractEvent.
+4. Cross-Border Metrics + Trust Graph Dashboard
+	- API live metrics (latency, fee, total funds moved) dari event indexed.
+	- Trust graph live menampilkan koneksi antar agent + sinyal penalty.
 4. Celo Sepolia Migration
 	- Stack deploy dan runtime sudah pindah dari Alfajores ke Celo Sepolia.
 
 ### 🟡 Partially Done / Perlu Penguatan
 
 1. Cross-Border Micropay Demo
-	- Settlement cUSD onchain sudah jalan.
-	- Routing ke local stablecoin bridge + multi-country scripted scenario belum final.
-2. Real-Time Dashboard “Holy Shit” Layer
-	- Execution timeline live sudah ada.
-	- Trust graph visual + multi-agent connection graph belum final.
+	- Routing metadata + stablecoin rails metadata (cUSD -> USDm) sudah ada.
+	- Bridge execution lintas rail real liquidity masih bisa diperdalam.
 
 ### ❌ Belum Implemented (High Impact)
 
-1. Merkle Proof per offchain step (verifiable offchain computation commitment)
-2. Human Oracle + ZK fallback (SelfClaw/SelfProtocol flow onchain trigger)
-3. Pre-recorded demo backup asset (video + deterministic replay script)
-4. Onchain verifiable semantic top-N matching
+1. Human Oracle + ZK attestation verification onchain (SelfClaw/SelfProtocol cryptographic check)
+2. Pre-recorded demo backup asset (video + deterministic replay script)
+3. Onchain verifiable semantic top-N matching
 
 
