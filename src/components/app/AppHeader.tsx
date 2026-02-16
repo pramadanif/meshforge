@@ -2,23 +2,21 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { Search, Bell } from 'lucide-react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { currentUser } from '@/data/mock';
 
 export function AppHeader() {
-    const [showDropdown, setShowDropdown] = useState(false);
+    const [showDropdown] = useState(false);
 
     return (
-        <header className="sticky top-0 z-40 h-20 bg-white/80 backdrop-blur-2xl border-b border-gray-100/50 flex items-center px-4 lg:px-8 shadow-sm transition-all duration-300">
+        <header className="sticky top-0 z-40 h-20 app-glass flex items-center px-4 lg:px-8 shadow-sm transition-all duration-300">
             {/* Logo */}
             <Link href="/dashboard" className="flex items-center gap-2.5 mr-6 group flex-shrink-0">
                 <div className="w-8 h-8 bg-brand-dark rounded-lg flex items-center justify-center shadow-lg shadow-brand-dark/20 transition-transform group-hover:rotate-3">
                     <span className="text-brand-primary font-display font-extrabold text-lg">M</span>
                 </div>
-                <span className="font-display font-bold text-base text-brand-dark hidden sm:inline">
-                    MeshForge<span className="text-brand-accent">.v2</span>
+                <span className="font-display font-bold text-base text-white hidden sm:inline">
+                    MeshForge<span className="text-brand-primary">.v2</span>
                 </span>
             </Link>
 
@@ -29,7 +27,7 @@ export function AppHeader() {
                     <input
                         type="text"
                         placeholder="Search agents, intents, transactions..."
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-2 text-sm text-brand-dark placeholder:text-gray-400 focus:outline-none focus:border-brand-primary focus:bg-white transition-all"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-brand-primary/50 focus:bg-white/10 transition-all"
                     />
                 </div>
             </div>
@@ -37,7 +35,7 @@ export function AppHeader() {
             {/* Right */}
             <div className="flex items-center gap-3 ml-auto">
                 {/* Notifications */}
-                <button className="relative p-2 rounded-xl hover:bg-gray-100 text-gray-500 hover:text-brand-dark transition-colors">
+                <button className="relative p-2 rounded-xl hover:bg-white/10 text-app-text-secondary hover:text-white transition-colors">
                     <Bell className="w-5 h-5" />
                     <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
                 </button>

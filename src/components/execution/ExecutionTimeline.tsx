@@ -5,12 +5,13 @@ import { useExecutionStore, ExecutionStep } from '@/store/executionStore';
 import { cn } from '@/lib/utils';
 
 const STEPS = [
+    { id: 'broadcasted', label: 'Broadcasted', icon: Check },
     { id: 'intent_accepted', label: 'Intent Accepted', icon: Check },
     { id: 'escrow_locked', label: 'Escrow Locked', icon: Lock },
-    { id: 'execution_in_progress', label: 'Execution', icon: Play },
+    { id: 'execution_started', label: 'Execution Started', icon: Play },
     { id: 'proof_submitted', label: 'Proof Submitted', icon: Upload },
     { id: 'settlement_released', label: 'Settlement Released', icon: CheckCircle2 },
-    { id: 'reputation_updated', label: 'Reputation Updated', icon: TrendingUp },
+    { id: 'settlement_recorded', label: 'Settlement Recorded', icon: TrendingUp },
 ];
 
 export const ExecutionTimeline = () => {
@@ -23,14 +24,14 @@ export const ExecutionTimeline = () => {
     const activeIndex = getCurrentStepIndex(currentStep);
 
     return (
-        <div className="app-card p-6 bg-white">
-            <h3 className="text-lg font-bold mb-6 text-brand-dark flex items-center gap-2">
+        <div className="app-card p-6">
+            <h3 className="text-lg font-bold mb-6 text-white flex items-center gap-2">
                 <Clock className="w-5 h-5 text-brand-primary" />
                 Live Execution Status
             </h3>
             <div className="relative space-y-8 pl-2">
                 {/* Vertical Bar */}
-                <div className="absolute left-[29px] top-2 bottom-4 w-0.5 bg-gray-100" />
+                <div className="absolute left-[29px] top-2 bottom-4 w-0.5 bg-white/10" />
 
                 {STEPS.map((step, index) => {
                     const isActive = index === activeIndex;
@@ -47,19 +48,19 @@ export const ExecutionTimeline = () => {
                             {/* Step Circle */}
                             <div
                                 className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10 transition-all duration-300 ${isActive
-                                    ? 'bg-brand-dark text-brand-primary scale-110 shadow-[0_0_20px_rgba(4,57,21,0.3)]'
+                                    ? 'bg-brand-primary text-brand-dark scale-110 shadow-[0_0_20px_rgba(4,57,21,0.3)]'
                                     : isCompleted
                                         ? 'bg-brand-secondary text-brand-dark'
-                                        : 'bg-gray-100 text-gray-400'
+                                        : 'bg-white/10 text-gray-500'
                                     }`}
                             >
-                                {isCompleted ? <Check className="w-4 h-4" /> : <span>{step.id}</span>}
+                                {isCompleted ? <Check className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
                             </div>
 
                             <div className="flex flex-col">
                                 <span className={cn(
                                     "font-medium text-sm transition-colors duration-300",
-                                    isActive ? "text-brand-dark font-bold" : "text-gray-500"
+                                    isActive ? "text-white font-bold" : "text-gray-500"
                                 )}>
                                     {step.label}
                                 </span>

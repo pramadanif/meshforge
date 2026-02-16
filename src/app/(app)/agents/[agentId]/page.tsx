@@ -31,7 +31,7 @@ export default function AgentProfilePage() {
     return (
         <div className="p-4 lg:p-6 max-w-4xl mx-auto">
             {/* Back */}
-            <Link href="/agents" className="inline-flex items-center gap-2 text-sm text-app-text-secondary hover:text-white transition-colors mb-6">
+            <Link href="/agents" className="inline-flex items-center gap-2 text-sm text-app-text-secondary hover:text-brand-dark transition-colors mb-6">
                 <ArrowLeft className="w-4 h-4" /> Back to directory
             </Link>
 
@@ -47,7 +47,7 @@ export default function AgentProfilePage() {
                     </div>
                     <div className="flex-1">
                         <div className="flex items-center gap-3 mb-1">
-                            <h1 className="text-xl font-display font-bold text-white">{agent.name}</h1>
+                            <h1 className="text-xl font-display font-bold text-brand-dark">{agent.name}</h1>
                             <StatusBadge status={agent.status} type="agent" />
                         </div>
                         <div className="flex items-center gap-3 text-sm text-app-text-secondary mb-2">
@@ -63,10 +63,10 @@ export default function AgentProfilePage() {
                         {agent.bio && <p className="text-sm text-app-text-secondary">{agent.bio}</p>}
                     </div>
                     <div className="flex gap-2 flex-shrink-0">
-                        <button className="px-4 py-2 bg-white/5 border border-app-border text-white text-sm font-medium rounded-xl hover:bg-white/10 transition-colors">
+                        <button className="px-4 py-2 bg-white border border-app-border text-brand-dark text-sm font-medium rounded-xl hover:bg-brand-surface transition-colors">
                             ❤️ Favorite
                         </button>
-                        <button className="flex items-center gap-1.5 px-4 py-2 bg-white/5 border border-app-border text-white text-sm font-medium rounded-xl hover:bg-white/10 transition-colors">
+                        <button className="flex items-center gap-1.5 px-4 py-2 bg-white border border-app-border text-brand-dark text-sm font-medium rounded-xl hover:bg-brand-surface transition-colors">
                             <MessageCircle className="w-4 h-4" /> Chat
                         </button>
                         <button className="flex items-center gap-1.5 px-4 py-2 bg-app-neon text-app-bg text-sm font-bold rounded-xl hover:bg-white transition-colors">
@@ -86,7 +86,7 @@ export default function AgentProfilePage() {
                 ].map(({ icon: Icon, label, value, color }) => (
                     <div key={label} className="app-card p-4 text-center">
                         <Icon className={`w-5 h-5 ${color} mx-auto mb-2`} />
-                        <p className="text-lg font-bold text-white">{value}</p>
+                        <p className="text-lg font-bold text-brand-dark">{value}</p>
                         <p className="text-xs text-app-text-secondary">{label}</p>
                     </div>
                 ))}
@@ -94,13 +94,13 @@ export default function AgentProfilePage() {
 
             {/* Reputation Breakdown */}
             <div className="app-card p-5 mb-6">
-                <h3 className="text-sm font-bold text-white mb-4">Reputation Breakdown</h3>
+                <h3 className="text-sm font-bold text-brand-dark mb-4">Reputation Breakdown</h3>
                 <div className="space-y-3">
                     {reputationBreakdown.map(({ label, value, color }) => (
                         <div key={label}>
                             <div className="flex justify-between text-xs mb-1">
                                 <span className="text-app-text-secondary">{label}</span>
-                                <span className="text-white font-medium">{value}/100</span>
+                                <span className="text-brand-dark font-medium">{value}/100</span>
                             </div>
                             <div className="w-full bg-white/5 rounded-full h-2">
                                 <div className={`${color} rounded-full h-2 transition-all duration-500`} style={{ width: `${value}%` }} />
@@ -118,7 +118,7 @@ export default function AgentProfilePage() {
 
             {/* Activity Chart placeholder */}
             <div className="app-card p-5 mb-6">
-                <h3 className="text-sm font-bold text-white mb-4">Activity (Last 7 Days)</h3>
+                <h3 className="text-sm font-bold text-brand-dark mb-4">Activity (Last 7 Days)</h3>
                 <div className="flex items-end gap-2 h-32">
                     {activityChartData.map((d) => (
                         <div key={d.day} className="flex-1 flex flex-col items-center gap-1">
@@ -126,7 +126,7 @@ export default function AgentProfilePage() {
                                 className="w-full bg-app-neon/20 rounded-t-md hover:bg-app-neon/40 transition-colors relative group"
                                 style={{ height: `${(d.intents / 12) * 100}%`, minHeight: '4px' }}
                             >
-                                <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-app-card border border-app-border text-xs text-white px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-white border border-app-border text-xs text-brand-dark px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                                     {d.intents}
                                 </div>
                             </div>
@@ -139,12 +139,12 @@ export default function AgentProfilePage() {
             {/* Skills & Endorsements */}
             {agent.endorsements && agent.endorsements.length > 0 && (
                 <div className="app-card p-5 mb-6">
-                    <h3 className="text-sm font-bold text-white mb-4">Skills & Endorsements</h3>
+                    <h3 className="text-sm font-bold text-brand-dark mb-4">Skills & Endorsements</h3>
                     <div className="space-y-2">
                         {agent.endorsements.map(({ skill, count }: Endorsement) => (
                             <div key={skill} className="flex items-center justify-between bg-white/[0.03] rounded-xl px-4 py-3 border border-app-border/50">
                                 <span className="text-sm text-app-neon font-medium">{skill}</span>
-                                <span className="text-xs text-app-text-secondary">endorsed by <span className="text-white font-medium">{count}</span> agents</span>
+                                <span className="text-xs text-app-text-secondary">endorsed by <span className="text-brand-dark font-medium">{count}</span> agents</span>
                             </div>
                         ))}
                     </div>
@@ -154,7 +154,7 @@ export default function AgentProfilePage() {
             {/* Testimonials */}
             {agent.testimonials && agent.testimonials.length > 0 && (
                 <div className="app-card p-5 mb-6">
-                    <h3 className="text-sm font-bold text-white mb-4">Testimonials</h3>
+                    <h3 className="text-sm font-bold text-brand-dark mb-4">Testimonials</h3>
                     <div className="space-y-3">
                         {agent.testimonials.map(({ agentName, text, date }: Testimonial, i: number) => (
                             <div key={i} className="bg-white/[0.03] rounded-xl px-4 py-3 border border-app-border/50">
@@ -168,7 +168,7 @@ export default function AgentProfilePage() {
 
             {/* Wallet info */}
             <div className="app-card p-5">
-                <h3 className="text-sm font-bold text-white mb-3">Onchain Identity</h3>
+                <h3 className="text-sm font-bold text-brand-dark mb-3">Onchain Identity</h3>
                 <div className="flex items-center gap-3">
                     <code className="text-xs text-app-text-secondary font-mono bg-black/20 px-2 py-1 rounded">{agent.walletAddress}</code>
                     <a href="https://www.8004scan.io/" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 flex items-center gap-1 text-xs">

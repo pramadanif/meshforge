@@ -36,7 +36,7 @@ export default function IntentsPage() {
             <div className="mb-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                     <div>
-                        <h1 className="text-2xl font-display font-bold text-white">Intent Marketplace</h1>
+                        <h1 className="text-2xl font-display font-bold text-brand-dark">Intent Marketplace</h1>
                         <p className="text-sm text-app-text-secondary mt-1">
                             {openCount} open intents | $12K escrow locked | Real-time discovery
                         </p>
@@ -52,14 +52,14 @@ export default function IntentsPage() {
 
                 {/* Tabs + Controls */}
                 <div className="flex items-center justify-between gap-4 flex-wrap">
-                    <div className="flex gap-1 bg-white/5 rounded-xl p-1">
+                    <div className="flex gap-1 bg-white border border-app-border rounded-xl p-1">
                         {tabs.map(({ id, label }) => (
                             <button
                                 key={id}
                                 onClick={() => setTab(id)}
                                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${tab === id
                                     ? 'bg-app-neon text-app-bg'
-                                    : 'text-app-text-secondary hover:text-white'
+                                    : 'text-app-text-secondary hover:text-brand-dark'
                                     }`}
                             >
                                 {label}
@@ -70,20 +70,20 @@ export default function IntentsPage() {
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setShowFilters(!showFilters)}
-                            className={`p-2 rounded-xl transition-colors ${showFilters ? 'bg-app-neon/10 text-app-neon' : 'text-app-text-secondary hover:text-white hover:bg-white/5'}`}
+                            className={`p-2 rounded-xl transition-colors ${showFilters ? 'bg-app-neon/10 text-app-neon' : 'text-app-text-secondary hover:text-brand-dark hover:bg-brand-surface'}`}
                         >
                             <SlidersHorizontal className="w-5 h-5" />
                         </button>
-                        <div className="flex bg-white/5 rounded-xl p-0.5">
+                        <div className="flex bg-white border border-app-border rounded-xl p-0.5">
                             <button
                                 onClick={() => setViewMode('grid')}
-                                className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-white/10 text-white' : 'text-app-text-secondary'}`}
+                                className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-brand-surface text-brand-dark' : 'text-app-text-secondary'}`}
                             >
                                 <Grid3X3 className="w-4 h-4" />
                             </button>
                             <button
                                 onClick={() => setViewMode('list')}
-                                className={`p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-white/10 text-white' : 'text-app-text-secondary'}`}
+                                className={`p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-brand-surface text-brand-dark' : 'text-app-text-secondary'}`}
                             >
                                 <List className="w-4 h-4" />
                             </button>

@@ -40,7 +40,7 @@ export default function ChatPage() {
             {/* Conversation List */}
             <div className={`${showList ? 'flex' : 'hidden'} lg:flex flex-col w-full lg:w-80 bg-app-bg border-r border-app-border`}>
                 <div className="p-4 border-b border-app-border">
-                    <h2 className="text-lg font-display font-bold text-white mb-3">Messages</h2>
+                    <h2 className="text-lg font-display font-bold text-brand-dark mb-3">Messages</h2>
                     <input
                         type="text"
                         placeholder="Search conversations..."
@@ -52,7 +52,7 @@ export default function ChatPage() {
                         <button
                             key={conv.id}
                             onClick={() => handleSelectConv(conv)}
-                            className={`w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-white/[0.03] transition-colors border-b border-app-border/50 ${selectedConv?.id === conv.id ? 'bg-white/5' : ''
+                            className={`w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-brand-surface transition-colors border-b border-app-border/50 ${selectedConv?.id === conv.id ? 'bg-brand-surface' : ''
                                 }`}
                         >
                             <div className="relative flex-shrink-0">
@@ -64,7 +64,7 @@ export default function ChatPage() {
                             </div>
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-center justify-between gap-2">
-                                    <p className="text-sm font-semibold text-white truncate">{conv.agentName}</p>
+                                    <p className="text-sm font-semibold text-brand-dark truncate">{conv.agentName}</p>
                                     <span className="text-[10px] text-app-text-secondary flex-shrink-0">{conv.lastMessageTime}</span>
                                 </div>
                                 <p className="text-xs text-app-text-secondary truncate mt-0.5">{conv.lastMessage}</p>
@@ -85,7 +85,7 @@ export default function ChatPage() {
                     <>
                         {/* Chat Header */}
                         <div className="flex items-center gap-3 px-4 py-3 border-b border-app-border">
-                            <button onClick={() => setShowList(true)} className="lg:hidden p-1 text-app-text-secondary hover:text-white">
+                                <button onClick={() => setShowList(true)} className="lg:hidden p-1 text-app-text-secondary hover:text-brand-dark">
                                 <ArrowLeft className="w-5 h-5" />
                             </button>
                             <div className="relative">
@@ -96,7 +96,7 @@ export default function ChatPage() {
                                     }`} />
                             </div>
                             <div>
-                                <p className="text-sm font-semibold text-white">{selectedConv.agentName}</p>
+                                <p className="text-sm font-semibold text-brand-dark">{selectedConv.agentName}</p>
                                 <p className="text-[10px] text-app-text-secondary capitalize">{selectedConv.agentStatus}</p>
                             </div>
                         </div>
@@ -106,8 +106,8 @@ export default function ChatPage() {
                             {messages.map((msg) => (
                                 <div key={msg.id} className={`flex ${msg.isOwn ? 'justify-end' : 'justify-start'}`}>
                                     <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm ${msg.isOwn
-                                        ? 'bg-app-neon/20 text-white rounded-br-md'
-                                        : 'bg-white/5 text-app-text rounded-bl-md border border-app-border/50'
+                                        ? 'bg-brand-dark text-white rounded-br-md'
+                                        : 'bg-white text-app-text rounded-bl-md border border-app-border/50'
                                         }`}>
                                         <p>{msg.text}</p>
                                         <p className={`text-[10px] mt-1 ${msg.isOwn ? 'text-app-neon/60' : 'text-app-text-secondary/60'} text-right`}>{msg.timestamp}</p>
@@ -120,7 +120,7 @@ export default function ChatPage() {
                         {/* Input */}
                         <div className="p-3 border-t border-app-border">
                             <div className="flex items-center gap-2">
-                                <button className="p-2 text-app-text-secondary hover:text-white transition-colors">
+                                <button className="p-2 text-app-text-secondary hover:text-brand-dark transition-colors">
                                     <Smile className="w-5 h-5" />
                                 </button>
                                 <input

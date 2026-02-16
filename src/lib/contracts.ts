@@ -1,100 +1,187 @@
-// TODO: Replace with deployed contract address on Celo Alfajores
-export const MESH_FORGE_ADDRESS = '0x1234567890123456789012345678901234567890' as const;
+export const INTENT_MESH_ADDRESS = (process.env.NEXT_PUBLIC_INTENT_MESH_ADDRESS ?? '0x0000000000000000000000000000000000000000') as `0x${string}`;
+export const AGENT_REGISTRY_ADDRESS = (process.env.NEXT_PUBLIC_AGENT_REGISTRY_ADDRESS ?? '0x0000000000000000000000000000000000000000') as `0x${string}`;
+export const AGENT_FACTORY_ADDRESS = (process.env.NEXT_PUBLIC_AGENT_FACTORY_ADDRESS ?? '0x0000000000000000000000000000000000000000') as `0x${string}`;
+export const MESH_VAULT_ADDRESS = (process.env.NEXT_PUBLIC_MESH_VAULT_ADDRESS ?? '0x0000000000000000000000000000000000000000') as `0x${string}`;
 
-export const MESH_FORGE_ABI = [
+export const INTENT_MESH_ABI = [
     {
-        "inputs": [
-            { "internalType": "string", "name": "title", "type": "string" },
-            { "internalType": "string", "name": "description", "type": "string" },
-            { "internalType": "uint256", "name": "amount", "type": "uint256" },
-            { "internalType": "uint256", "name": "deadline", "type": "uint256" },
-            { "internalType": "string", "name": "category", "type": "string" }
+        type: 'function',
+        name: 'broadcastIntent',
+        stateMutability: 'nonpayable',
+        inputs: [
+            { name: 'title', type: 'string', internalType: 'string' },
+            { name: 'description', type: 'string', internalType: 'string' },
+            { name: 'value', type: 'uint256', internalType: 'uint256' },
         ],
-        "name": "createIntent",
-        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-        "stateMutability": "payable", // msg.value might be used for staking or fees, or amount if native cUSD handling
-        "type": "function"
+        outputs: [{ name: '', type: 'uint256', internalType: 'uint256' }],
     },
     {
-        "inputs": [
-            { "internalType": "uint256", "name": "intentId", "type": "uint256" },
-            { "internalType": "uint256", "name": "amount", "type": "uint256" },
-            { "internalType": "string", "name": "message", "type": "string" }
+        type: 'function',
+        name: 'acceptIntent',
+        stateMutability: 'nonpayable',
+        inputs: [{ name: 'intentId', type: 'uint256', internalType: 'uint256' }],
+        outputs: [],
+    },
+    {
+        type: 'function',
+        name: 'lockEscrow',
+        stateMutability: 'nonpayable',
+        inputs: [{ name: 'intentId', type: 'uint256', internalType: 'uint256' }],
+        outputs: [],
+    },
+    {
+        type: 'function',
+        name: 'startExecution',
+        stateMutability: 'nonpayable',
+        inputs: [{ name: 'intentId', type: 'uint256', internalType: 'uint256' }],
+        outputs: [],
+    },
+    {
+        type: 'function',
+        name: 'submitProof',
+        stateMutability: 'nonpayable',
+        inputs: [
+            { name: 'intentId', type: 'uint256', internalType: 'uint256' },
+            { name: 'gpsHash', type: 'bytes32', internalType: 'bytes32' },
+            { name: 'photoHash', type: 'bytes32', internalType: 'bytes32' },
         ],
-        "name": "submitOffer",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
+        outputs: [],
     },
     {
-        "inputs": [
-            { "internalType": "uint256", "name": "intentId", "type": "uint256" },
-            { "internalType": "uint256", "name": "offerId", "type": "uint256" }
-        ],
-        "name": "acceptOffer",
-        "outputs": [],
-        "stateMutability": "payable", // Locking the funds
-        "type": "function"
+        type: 'function',
+        name: 'settle',
+        stateMutability: 'nonpayable',
+        inputs: [{ name: 'intentId', type: 'uint256', internalType: 'uint256' }],
+        outputs: [],
     },
     {
-        "inputs": [
-            { "internalType": "uint256", "name": "intentId", "type": "uint256" }
-        ],
-        "name": "settleIntent",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
+        type: 'function',
+        name: 'intentCount',
+        stateMutability: 'view',
+        inputs: [],
+        outputs: [{ name: '', type: 'uint256', internalType: 'uint256' }],
     },
     {
-        "inputs": [],
-        "name": "intentCount",
-        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [{ "internalType": "uint256", "name": "id", "type": "uint256" }],
-        "name": "getIntent",
-        "outputs": [
+        type: 'function',
+        name: 'getIntent',
+        stateMutability: 'view',
+        inputs: [{ name: 'intentId', type: 'uint256', internalType: 'uint256' }],
+        outputs: [
             {
-                "components": [
-                    { "internalType": "uint256", "name": "id", "type": "uint256" },
-                    { "internalType": "address", "name": "creator", "type": "address" },
-                    { "internalType": "string", "name": "title", "type": "string" },
-                    { "internalType": "string", "name": "description", "type": "string" },
-                    { "internalType": "uint256", "name": "amount", "type": "uint256" },
-                    { "internalType": "uint256", "name": "deadline", "type": "uint256" },
-                    { "internalType": "enum MeshForge.IntentStatus", "name": "status", "type": "uint8" }
+                name: '',
+                type: 'tuple',
+                internalType: 'struct IntentMesh.Intent',
+                components: [
+                    { name: 'id', type: 'uint256', internalType: 'uint256' },
+                    { name: 'requesterAgentId', type: 'uint256', internalType: 'uint256' },
+                    { name: 'executorAgentId', type: 'uint256', internalType: 'uint256' },
+                    { name: 'requester', type: 'address', internalType: 'address' },
+                    { name: 'executor', type: 'address', internalType: 'address' },
+                    { name: 'title', type: 'string', internalType: 'string' },
+                    { name: 'description', type: 'string', internalType: 'string' },
+                    { name: 'value', type: 'uint256', internalType: 'uint256' },
+                    { name: 'status', type: 'uint8', internalType: 'enum IntentMesh.Status' },
+                    { name: 'gpsHash', type: 'bytes32', internalType: 'bytes32' },
+                    { name: 'photoHash', type: 'bytes32', internalType: 'bytes32' },
+                    { name: 'createdAt', type: 'uint256', internalType: 'uint256' },
                 ],
-                "internalType": "struct MeshForge.Intent",
-                "name": "",
-                "type": "tuple"
-            }
+            },
         ],
-        "stateMutability": "view",
-        "type": "function"
     },
     {
-        "inputs": [
-            { "internalType": "address", "name": "agent", "type": "address" }
+        type: 'event',
+        anonymous: false,
+        name: 'IntentAccepted',
+        inputs: [
+            { indexed: true, name: 'intentId', type: 'uint256', internalType: 'uint256' },
+            { indexed: true, name: 'executorAgentId', type: 'uint256', internalType: 'uint256' },
+            { indexed: true, name: 'executor', type: 'address', internalType: 'address' },
         ],
-        "name": "getAgentProfile",
-        "outputs": [
-            { "internalType": "uint256", "name": "reputation", "type": "uint256" },
-            { "internalType": "uint256", "name": "completedIntents", "type": "uint256" },
-            { "internalType": "uint256", "name": "totalVolume", "type": "uint256" }
-        ],
-        "stateMutability": "view",
-        "type": "function"
     },
     {
-        "anonymous": false,
-        "inputs": [
-            { "indexed": true, "internalType": "uint256", "name": "intentId", "type": "uint256" },
-            { "indexed": true, "internalType": "address", "name": "creator", "type": "address" },
-            { "indexed": false, "internalType": "string", "name": "title", "type": "string" }
+        type: 'event',
+        anonymous: false,
+        name: 'EscrowLocked',
+        inputs: [
+            { indexed: true, name: 'intentId', type: 'uint256', internalType: 'uint256' },
+            { indexed: false, name: 'amount', type: 'uint256', internalType: 'uint256' },
         ],
-        "name": "IntentCreated",
-        "type": "event"
-    }
+    },
+    {
+        type: 'event',
+        anonymous: false,
+        name: 'ExecutionStarted',
+        inputs: [{ indexed: true, name: 'intentId', type: 'uint256', internalType: 'uint256' }],
+    },
+    {
+        type: 'event',
+        anonymous: false,
+        name: 'ProofSubmitted',
+        inputs: [
+            { indexed: true, name: 'intentId', type: 'uint256', internalType: 'uint256' },
+            { indexed: false, name: 'gpsHash', type: 'bytes32', internalType: 'bytes32' },
+            { indexed: false, name: 'photoHash', type: 'bytes32', internalType: 'bytes32' },
+        ],
+    },
+    {
+        type: 'event',
+        anonymous: false,
+        name: 'SettlementReleased',
+        inputs: [
+            { indexed: true, name: 'intentId', type: 'uint256', internalType: 'uint256' },
+            { indexed: false, name: 'amount', type: 'uint256', internalType: 'uint256' },
+            { indexed: true, name: 'executorAgentId', type: 'uint256', internalType: 'uint256' },
+        ],
+    },
+] as const;
+
+export const AGENT_REGISTRY_ABI = [
+    {
+        type: 'function',
+        name: 'getReputation',
+        stateMutability: 'view',
+        inputs: [{ name: 'agentId', type: 'uint256', internalType: 'uint256' }],
+        outputs: [{ name: '', type: 'uint256', internalType: 'uint256' }],
+    },
+    {
+        type: 'function',
+        name: 'getAgentProfile',
+        stateMutability: 'view',
+        inputs: [{ name: 'wallet', type: 'address', internalType: 'address' }],
+        outputs: [
+            { name: 'agentId', type: 'uint256', internalType: 'uint256' },
+            { name: 'reputation', type: 'uint256', internalType: 'uint256' },
+            { name: 'completedIntents', type: 'uint256', internalType: 'uint256' },
+            { name: 'totalVolume', type: 'uint256', internalType: 'uint256' },
+            { name: 'metadataURI', type: 'string', internalType: 'string' },
+        ],
+    },
+    {
+        type: 'event',
+        anonymous: false,
+        name: 'SettlementRecorded',
+        inputs: [
+            { indexed: true, name: 'intentId', type: 'uint256', internalType: 'uint256' },
+            { indexed: true, name: 'agentId', type: 'uint256', internalType: 'uint256' },
+            { indexed: false, name: 'value', type: 'uint256', internalType: 'uint256' },
+            { indexed: false, name: 'timestamp', type: 'uint256', internalType: 'uint256' },
+        ],
+    },
+] as const;
+
+export const AGENT_FACTORY_ABI = [
+    {
+        type: 'function',
+        name: 'createAgent',
+        stateMutability: 'nonpayable',
+        inputs: [{ name: 'metadataURI', type: 'string', internalType: 'string' }],
+        outputs: [{ name: 'wallet', type: 'address', internalType: 'address' }],
+    },
+    {
+        type: 'function',
+        name: 'controllerToWallet',
+        stateMutability: 'view',
+        inputs: [{ name: '', type: 'address', internalType: 'address' }],
+        outputs: [{ name: '', type: 'address', internalType: 'address' }],
+    },
 ] as const;

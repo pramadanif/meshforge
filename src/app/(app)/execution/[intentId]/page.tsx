@@ -10,7 +10,7 @@ import { EscrowCard } from '@/components/execution/EscrowCard';
 import { TransactionLog } from '@/components/execution/TransactionLog';
 import { ReputationMeter } from '@/components/execution/ReputationMeter';
 import { ProofSubmissionStub } from '@/components/execution/ProofSubmissionStub';
-import { DemoControls } from '@/components/execution/DemoControls'; // Keep or remove? Keep for now as fallback/demo
+import { DemoControls } from '@/components/execution/DemoControls';
 import { useIntent, useMeshForge } from '@/hooks/useMeshForge';
 import { useExecutionStore } from '@/store/executionStore';
 import { useAccount } from 'wagmi';
@@ -23,37 +23,28 @@ export default function ExecutionPage() {
     // Fetch Intent Data
     const { intent, isLoading } = useIntent(isNaN(intentId) ? undefined : intentId);
     const { address } = useAccount();
-    const { settleIntent, isPending: isSettling } = useMeshForge();
+    const { settle, isPending: isSettling } = useMeshForge();
 
-    // Store Synchronization
-    const { setStep, lockEscrow, releaseSettlement, currentStep } = useExecutionStore();
+    const { setTrackedIntent, currentStep } = useExecutionStore();
+
+    useEffect(() => {
+        if (isNaN(intentId)) return;
+        setTrackedIntent(intentId);
+        return () => setTrackedIntent(null);
+    }, [intentId, setTrackedIntent]);
 
     useEffect(() => {
         if (!intent) return;
-
-        // Sync store with intent state
         useExecutionStore.setState({
             escrowAmount: intent.amount,
-            escrowContractAddress: intentIdStr // Using ID as proxy for now, or actual contract address
+            escrowContractAddress: intentIdStr,
         });
-
-        if (intent.status === 'active') {
-            // In a real app, check specific events, but for now map 'active' to locked
-            if (currentStep !== 'escrow_locked' && currentStep !== 'execution_in_progress' && currentStep !== 'proof_submitted') {
-                lockEscrow('0x...', '0x...'); // Mock tx hash if not storing it
-                setStep('execution_in_progress'); // Simulate progress
-            }
-        } else if (intent.status === 'completed') {
-            releaseSettlement('0x...');
-            setStep('reputation_updated');
-        }
-    }, [intent, currentStep, lockEscrow, releaseSettlement, setStep, intentIdStr]);
+    }, [intent, intentIdStr]);
 
     const handleSettle = async () => {
         if (!intent) return;
         try {
-            // Mock proof for now
-            await settleIntent(Number(intent.id));
+            await settle(Number(intent.id));
         } catch (e) {
             console.error(e);
         }
@@ -77,27 +68,27 @@ export default function ExecutionPage() {
     }
 
     const isCreator = address && intent.creatorId.toLowerCase() === address.toLowerCase();
-    const canSettle = isCreator && intent.status === 'active'; // Or 'active' means working
+    const canSettle = isCreator && currentStep === 'proof_submitted';
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
             {/* Header */}
             <header className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-4">
-                    <Link href="/dashboard" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                        <ArrowLeft className="w-5 h-5 text-gray-500" />
+                    <Link href="/dashboard" className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                        <ArrowLeft className="w-5 h-5 text-gray-400" />
                     </Link>
                     <div>
                         <div className="flex items-center gap-2 mb-1">
-                            <h1 className="text-2xl font-bold text-brand-dark">Execution #{intent.id}</h1>
-                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${intent.status === 'active' ? 'bg-blue-50 text-blue-700 border-blue-100' :
-                                intent.status === 'completed' ? 'bg-green-50 text-green-700 border-green-100' :
-                                    'bg-gray-50 text-gray-700 border-gray-100'
+                            <h1 className="text-2xl font-bold text-white">Execution #{intent.id}</h1>
+                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${intent.status === 'in_progress' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                                intent.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                                    'bg-white/10 text-gray-300 border-white/10'
                                 }`}>
                                 {intent.status.toUpperCase()}
                             </span>
                         </div>
-                        <p className="text-gray-500 text-sm">Created {new Date(intent.createdAt).toLocaleDateString()} • {intent.title}</p>
+                        <p className="text-gray-400 text-sm">Created {new Date(intent.createdAt).toLocaleDateString()} • {intent.title}</p>
                     </div>
                 </div>
                 <div className="flex gap-3">
@@ -111,11 +102,11 @@ export default function ExecutionPage() {
                             Release Funds (Settle)
                         </button>
                     )}
-                    {/* <DemoControls />  Using real data now, mostly */}
-                    <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-400">
+                    <DemoControls />
+                    <button className="p-2 hover:bg-white/10 rounded-lg text-gray-400 transition-colors">
                         <Share2 className="w-5 h-5" />
                     </button>
-                    <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-400">
+                    <button className="p-2 hover:bg-white/10 rounded-lg text-gray-400 transition-colors">
                         <MoreHorizontal className="w-5 h-5" />
                     </button>
                 </div>
@@ -129,19 +120,19 @@ export default function ExecutionPage() {
                     <ExecutionTimeline />
 
                     {/* Agent Mini Profile (Placeholder for now as we don't fetch worker) */}
-                    <div className="app-card p-5 bg-white">
+                    <div className="app-card p-5">
                         <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Executor Agent</h4>
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
                                 ??
                             </div>
                             <div>
-                                <p className="font-bold text-brand-dark">Unassigned / Unknown</p>
-                                <p className="text-xs text-gray-500">Waiting for assignment</p>
+                                <p className="font-bold text-white">Unassigned / Unknown</p>
+                                <p className="text-xs text-gray-400">Waiting for assignment</p>
                             </div>
                             <div className="ml-auto text-right">
-                                <span className="block w-2.5 h-2.5 rounded-full bg-gray-300 ml-auto mb-1" />
-                                <span className="text-[10px] text-gray-400 font-medium">Offline</span>
+                                <span className="block w-2.5 h-2.5 rounded-full bg-gray-500 ml-auto mb-1" />
+                                <span className="text-[10px] text-gray-500 font-medium">Offline</span>
                             </div>
                         </div>
                     </div>

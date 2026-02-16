@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { User, Wallet, Star, Shield, Activity, Clock, Award, TrendingUp, Settings, LogOut, Copy, ExternalLink, CheckCircle, Flame } from 'lucide-react';
+import { Wallet, Star, Shield, TrendingUp, Settings, LogOut, Copy, ExternalLink, CheckCircle, Flame } from 'lucide-react';
 import { useAccount, useBalance, useDisconnect } from 'wagmi';
 import { useAgentReputation } from '@/hooks/useMeshForge';
 import { StatusBadge } from '@/components/ui/StatusBadge';
@@ -45,7 +45,7 @@ export default function AccountPage() {
                     <div className="flex-1 text-center md:text-left space-y-4">
                         <div>
                             <h1 className="text-2xl lg:text-3xl font-bold font-display">{address ? `Agent ${address.slice(0, 6)}` : 'Guest User'}</h1>
-                            <div className="flex items-center justify-center md:justify-start gap-2 text-brand-surface/80 mt-1">
+                            <div className="flex items-center justify-center md:justify-start gap-2 text-white/80 mt-1">
                                 <Wallet className="w-4 h-4" />
                                 <code className="font-mono text-sm">{displayAddress}</code>
                                 <button className="hover:text-white transition-colors"><Copy className="w-3.5 h-3.5" /></button>
@@ -281,7 +281,7 @@ export default function AccountPage() {
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <span className="text-sm text-app-text-secondary">Language</span>
-                                <select className="bg-white/5 border border-app-border rounded-lg px-3 py-1.5 text-sm text-app-text focus:outline-none focus:border-app-neon/50">
+                                <select className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-app-neon/50">
                                     <option>English</option>
                                     <option>Swahili</option>
                                     <option>French</option>
@@ -289,14 +289,14 @@ export default function AccountPage() {
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-sm text-app-text-secondary">Theme</span>
-                                <select className="bg-white/5 border border-app-border rounded-lg px-3 py-1.5 text-sm text-app-text focus:outline-none focus:border-app-neon/50">
+                                <select className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-app-neon/50">
                                     <option>Dark</option>
                                     <option>Light</option>
                                 </select>
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-sm text-app-text-secondary">Currency display</span>
-                                <select className="bg-white/5 border border-app-border rounded-lg px-3 py-1.5 text-sm text-app-text focus:outline-none focus:border-app-neon/50">
+                                <select className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-app-neon/50">
                                     <option>cUSD</option>
                                     <option>USD</option>
                                     <option>KES</option>

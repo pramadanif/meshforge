@@ -1,94 +1,145 @@
 import { create } from 'zustand';
 
 export type ExecutionStep =
+    | 'broadcasted'
     | 'intent_accepted'
     | 'escrow_locked'
-    | 'execution_in_progress'
+    | 'execution_started'
     | 'proof_submitted'
     | 'settlement_released'
-    | 'reputation_updated';
+    | 'settlement_recorded';
+
+export interface ExecutionEventLog {
+    id: string;
+    intentId: number;
+    step: ExecutionStep;
+    txHash?: string;
+    timestamp: number;
+}
 
 export interface ExecutionState {
+    trackedIntentId: number | null;
     currentStep: ExecutionStep;
     escrowTxHash: string | null;
     escrowAmount: number;
     escrowContractAddress: string | null;
-    executionStartTime: number | null;
-    executionProgress: number; // 0-100
     proofData: {
         gpsHash?: string;
         photoHash?: string;
-        signature?: string;
         timestamp?: number;
     } | null;
     settlementTxHash: string | null;
-    reputationUpdate: {
-        before: number;
-        after: number;
-        delta: number;
-    } | null;
+    reputation: number;
+    eventLogs: ExecutionEventLog[];
 
-    // Actions
+    setTrackedIntent: (intentId: number | null) => void;
     setStep: (step: ExecutionStep) => void;
-    lockEscrow: (txHash: string, address: string) => void;
-    startExecution: () => void;
-    updateProgress: (progress: number) => void;
-    submitProof: (data: ExecutionState['proofData']) => void;
-    releaseSettlement: (txHash: string) => void;
-    updateReputation: (before: number, after: number) => void;
+    onIntentAccepted: (intentId: number, txHash?: string) => void;
+    onEscrowLocked: (intentId: number, amount: number, txHash?: string) => void;
+    onExecutionStarted: (intentId: number, txHash?: string) => void;
+    onProofSubmitted: (intentId: number, gpsHash: string, photoHash: string, txHash?: string) => void;
+    onSettlementReleased: (intentId: number, txHash?: string) => void;
+    onSettlementRecorded: (intentId: number, txHash?: string) => void;
+    setReputation: (value: number) => void;
     reset: () => void;
 }
 
 export const useExecutionStore = create<ExecutionState>((set) => ({
-    currentStep: 'intent_accepted',
+    trackedIntentId: null,
+    currentStep: 'broadcasted',
     escrowTxHash: null,
     escrowAmount: 0,
     escrowContractAddress: null,
-    executionStartTime: null,
-    executionProgress: 0,
     proofData: null,
     settlementTxHash: null,
-    reputationUpdate: null,
+    reputation: 0,
+    eventLogs: [],
+
+    setTrackedIntent: (intentId) => set({ trackedIntentId: intentId }),
 
     setStep: (step) => set({ currentStep: step }),
 
-    lockEscrow: (txHash, address) => set({
+    onIntentAccepted: (intentId, txHash) => set((state) => ({
+        currentStep: 'intent_accepted',
+        eventLogs: [{
+            id: `accepted-${intentId}-${Date.now()}`,
+            intentId,
+            step: 'intent_accepted',
+            txHash,
+            timestamp: Date.now(),
+        }, ...state.eventLogs],
+    })),
+
+    onEscrowLocked: (intentId, amount, txHash) => set((state) => ({
         currentStep: 'escrow_locked',
         escrowTxHash: txHash,
-        escrowContractAddress: address
-    }),
+        escrowAmount: amount,
+        eventLogs: [{
+            id: `escrow-${intentId}-${Date.now()}`,
+            intentId,
+            step: 'escrow_locked',
+            txHash,
+            timestamp: Date.now(),
+        }, ...state.eventLogs],
+    })),
 
-    startExecution: () => set({
-        currentStep: 'execution_in_progress',
-        executionStartTime: Date.now(),
-        executionProgress: 0
-    }),
+    onExecutionStarted: (intentId, txHash) => set((state) => ({
+        currentStep: 'execution_started',
+        eventLogs: [{
+            id: `execution-${intentId}-${Date.now()}`,
+            intentId,
+            step: 'execution_started',
+            txHash,
+            timestamp: Date.now(),
+        }, ...state.eventLogs],
+    })),
 
-    updateProgress: (progress) => set({ executionProgress: progress }),
-
-    submitProof: (data) => set({
+    onProofSubmitted: (intentId, gpsHash, photoHash, txHash) => set((state) => ({
         currentStep: 'proof_submitted',
-        proofData: data
-    }),
+        proofData: { gpsHash, photoHash, timestamp: Date.now() },
+        eventLogs: [{
+            id: `proof-${intentId}-${Date.now()}`,
+            intentId,
+            step: 'proof_submitted',
+            txHash,
+            timestamp: Date.now(),
+        }, ...state.eventLogs],
+    })),
 
-    releaseSettlement: (txHash) => set({
+    onSettlementReleased: (intentId, txHash) => set((state) => ({
         currentStep: 'settlement_released',
-        settlementTxHash: txHash
-    }),
+        settlementTxHash: txHash,
+        eventLogs: [{
+            id: `settled-${intentId}-${Date.now()}`,
+            intentId,
+            step: 'settlement_released',
+            txHash,
+            timestamp: Date.now(),
+        }, ...state.eventLogs],
+    })),
 
-    updateReputation: (before, after) => set({
-        currentStep: 'reputation_updated',
-        reputationUpdate: { before, after, delta: after - before }
-    }),
+    onSettlementRecorded: (intentId, txHash) => set((state) => ({
+        currentStep: 'settlement_recorded',
+        eventLogs: [{
+            id: `recorded-${intentId}-${Date.now()}`,
+            intentId,
+            step: 'settlement_recorded',
+            txHash,
+            timestamp: Date.now(),
+        }, ...state.eventLogs],
+    })),
+
+    setReputation: (value) => set({ reputation: value }),
 
     reset: () => set({
-        currentStep: 'intent_accepted',
+        trackedIntentId: null,
+        currentStep: 'broadcasted',
         escrowTxHash: null,
+        escrowAmount: 0,
         escrowContractAddress: null,
-        executionStartTime: null,
-        executionProgress: 0,
         proofData: null,
         settlementTxHash: null,
-        reputationUpdate: null,
+        reputation: 0,
+        eventLogs: [],
     })
 }));

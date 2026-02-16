@@ -11,17 +11,19 @@
   --color-brand-darker: #022c0f;
   --color-brand-surface: #FDFDE0;
 
-  /* App theme - Aligned with Brand */
-  --color-app-bg: #FDFDE0;
+  /* App theme - Dark Aesthetic (Landing Page Style) */
+  --color-app-bg: #022c0f;
+  /* brand-darker */
+  --color-app-card: rgba(4, 57, 21, 0.3);
+  /* brand-dark with opacity */
+  --color-app-border: rgba(176, 206, 136, 0.1);
+  /* brand-secondary low opacity */
+  --color-app-text: #FDFDE0;
   /* brand-surface */
-  --color-app-card: #FFFFFF;
-  --color-app-border: #E2E8F0;
-  --color-app-text: #043915;
-  /* brand-dark */
-  --color-app-text-secondary: #4C763B;
-  /* brand-accent */
-  --color-app-neon: #043915;
-  /* brand-dark (primary action) */
+  --color-app-text-secondary: #B0CE88;
+  /* brand-secondary */
+  --color-app-neon: #FFFD8F;
+  /* brand-primary */
   --color-app-purple: #B0CE88;
   /* brand-secondary */
   --color-app-amber: #F59E0B;
@@ -48,9 +50,9 @@
   }
 
   .glass-dark {
-    background: rgba(4, 57, 21, 0.8);
+    background: rgba(4, 57, 21, 0.6);
     backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(255, 253, 143, 0.1);
+    border-bottom: 1px solid rgba(255, 253, 143, 0.05);
   }
 
   .fade-in-section {
@@ -67,23 +69,25 @@
 
   /* App utilities */
   .app-card {
-    background: #FFFFFF;
-    border: 1px solid #E2E8F0;
+    background: rgba(6, 78, 29, 0.3);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(176, 206, 136, 0.1);
     border-radius: 1rem;
     transition: all 0.2s ease;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   }
 
   .app-card:hover {
-    border-color: #B0CE88;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    background: rgba(6, 78, 29, 0.4);
+    border-color: rgba(255, 253, 143, 0.2);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     transform: translateY(-2px);
   }
 
   .app-glass {
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(2, 44, 15, 0.7);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(226, 232, 240, 0.5);
+    border-bottom: 1px solid rgba(176, 206, 136, 0.1);
   }
 
   .shimmer {
@@ -105,8 +109,8 @@
 
 body {
   font-family: var(--font-sans);
-  background-color: #ffffff;
-  color: #043915;
+  background-color: var(--color-brand-darker);
+  color: #FDFDE0;
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -126,10 +130,10 @@ html {
 }
 
 .app-scrollbar::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #043915;
   border-radius: 3px;
 }
 
 .app-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #064e1d;
 }

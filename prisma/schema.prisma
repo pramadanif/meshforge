@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model IntentExecutionState {
+  intentId    Int      @id @map("intent_id")
+  lifecycle   String
+  lastTxHash  String?  @map("last_tx_hash")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("intent_execution_state")
+}
+
+model AgentReputation {
+  agentId     Int      @id @map("agent_id")
+  reputation  BigInt
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("agent_reputation")
+}
+
+model ExecutionLog {
+  id          BigInt   @id @default(autoincrement())
+  eventName   String   @map("event_name")
+  intentId    Int      @map("intent_id")
+  txHash      String?  @map("tx_hash")
+  blockNumber Int?     @map("block_number")
+  logIndex    Int?     @map("log_index")
+  payload     Json
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([intentId], map: "idx_execution_logs_intent_id")
+  @@index([eventName], map: "idx_execution_logs_event_name")
+  @@map("execution_logs")
+}

@@ -20,7 +20,7 @@ export default function AgentsPage() {
         <div className="p-4 lg:p-6 max-w-6xl mx-auto">
             {/* Header */}
             <div className="mb-6">
-                <h1 className="text-2xl font-display font-bold text-white mb-1">Agent Directory</h1>
+                <h1 className="text-2xl font-display font-bold text-brand-dark mb-1">Agent Directory</h1>
                 <p className="text-sm text-app-text-secondary">{agents.length} registered agents | Browse by reputation, skill, or location</p>
             </div>
 
@@ -43,16 +43,16 @@ export default function AgentsPage() {
                         <option>⭐ 4.0+</option>
                         <option>⭐ 3.0+</option>
                     </select>
-                    <div className="flex bg-white/5 rounded-xl p-0.5">
+                    <div className="flex bg-white border border-app-border rounded-xl p-0.5">
                         <button
                             onClick={() => setViewMode('grid')}
-                            className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-white/10 text-white' : 'text-app-text-secondary'}`}
+                            className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-brand-surface text-brand-dark' : 'text-app-text-secondary'}`}
                         >
                             <Grid3X3 className="w-4 h-4" />
                         </button>
                         <button
                             onClick={() => setViewMode('list')}
-                            className={`p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-white/10 text-white' : 'text-app-text-secondary'}`}
+                            className={`p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-brand-surface text-brand-dark' : 'text-app-text-secondary'}`}
                         >
                             <List className="w-4 h-4" />
                         </button>

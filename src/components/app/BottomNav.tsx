@@ -3,14 +3,15 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Search, Wallet, User, MoreHorizontal } from 'lucide-react';
+import { LayoutDashboard, Search, Wallet, User, MoreHorizontal, ActivitySquare } from 'lucide-react';
 
 const navItems = [
     { icon: LayoutDashboard, label: 'Home', href: '/dashboard' },
     { icon: Search, label: 'Discover', href: '/intents' },
-    { icon: Wallet, label: 'Activity', href: '/account' },
+    { icon: ActivitySquare, label: 'Execution', href: '/execution' },
     { icon: User, label: 'Agents', href: '/agents' },
-    { icon: MoreHorizontal, label: 'More', href: '/chat' },
+    { icon: Wallet, label: 'Account', href: '/account' },
+    { icon: MoreHorizontal, label: 'Chat', href: '/chat' },
 ];
 
 export function BottomNav() {

@@ -1,57 +1,112 @@
 import { useMemo } from 'react';
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt, useReadContracts } from 'wagmi';
-import { MESH_FORGE_ABI, MESH_FORGE_ADDRESS } from '@/lib/contracts';
-import { parseEther, formatEther } from 'viem';
+import { useReadContract, useWriteContract, useReadContracts } from 'wagmi';
+import {
+    AGENT_FACTORY_ABI,
+    AGENT_FACTORY_ADDRESS,
+    AGENT_REGISTRY_ABI,
+    AGENT_REGISTRY_ADDRESS,
+    INTENT_MESH_ABI,
+    INTENT_MESH_ADDRESS,
+} from '@/lib/contracts';
+import { formatEther, parseEther, pad, stringToHex } from 'viem';
+import type { Intent } from '@/types';
+
+function asBytes32(value: string) {
+    return pad(stringToHex(value), { size: 32 });
+}
+
+function mapIntentStatus(status: number): 'open' | 'accepted' | 'in_progress' | 'completed' {
+    if (status === 1) return 'accepted';
+    if (status === 2 || status === 3 || status === 4) return 'in_progress';
+    if (status === 5) return 'completed';
+    return 'open';
+}
 
 export function useMeshForge() {
     const { writeContract, data: hash, error, isPending } = useWriteContract();
 
-    // 1. Create Intent
-    const createIntent = async (title: string, description: string, amount: string, deadline: number, category: string) => {
+    const createAgent = async (metadataURI: string) => {
         writeContract({
-            address: MESH_FORGE_ADDRESS,
-            abi: MESH_FORGE_ABI,
-            functionName: 'createIntent',
-            args: [title, description, parseEther(amount), BigInt(deadline), category],
+            address: AGENT_FACTORY_ADDRESS,
+            abi: AGENT_FACTORY_ABI,
+            functionName: 'createAgent',
+            args: [metadataURI],
         });
     };
 
-    // 2. Submit Offer
-    const submitOffer = async (intentId: number, amount: string, message: string) => {
+    const broadcastIntent = async (title: string, description: string, amount: string) => {
         writeContract({
-            address: MESH_FORGE_ADDRESS,
-            abi: MESH_FORGE_ABI,
-            functionName: 'submitOffer',
-            args: [BigInt(intentId), parseEther(amount), message],
+            address: INTENT_MESH_ADDRESS,
+            abi: INTENT_MESH_ABI,
+            functionName: 'broadcastIntent',
+            args: [title, description, parseEther(amount)],
         });
     };
 
-    // 3. Accept Offer (Lock Funds)
-    const acceptOffer = async (intentId: number, offerId: number, amount: string) => {
+    const createIntent = async (
+        title: string,
+        description: string,
+        amount: string,
+        _deadline?: number,
+        _category?: string,
+    ) => {
+        await broadcastIntent(title, description, amount);
+    };
+
+    const acceptIntent = async (intentId: number) => {
         writeContract({
-            address: MESH_FORGE_ADDRESS,
-            abi: MESH_FORGE_ABI,
-            functionName: 'acceptOffer',
-            args: [BigInt(intentId), BigInt(offerId)],
-            value: parseEther(amount), // Send cUSD/CELO to contract
+            address: INTENT_MESH_ADDRESS,
+            abi: INTENT_MESH_ABI,
+            functionName: 'acceptIntent',
+            args: [BigInt(intentId)],
         });
     };
 
-    // 4. Settle Intent (Release Funds)
-    const settleIntent = async (intentId: number) => {
+    const lockEscrow = async (intentId: number) => {
         writeContract({
-            address: MESH_FORGE_ADDRESS,
-            abi: MESH_FORGE_ABI,
-            functionName: 'settleIntent',
+            address: INTENT_MESH_ADDRESS,
+            abi: INTENT_MESH_ABI,
+            functionName: 'lockEscrow',
+            args: [BigInt(intentId)],
+        });
+    };
+
+    const startExecution = async (intentId: number) => {
+        writeContract({
+            address: INTENT_MESH_ADDRESS,
+            abi: INTENT_MESH_ABI,
+            functionName: 'startExecution',
+            args: [BigInt(intentId)],
+        });
+    };
+
+    const submitProof = async (intentId: number, gpsHash: string, photoHash: string) => {
+        writeContract({
+            address: INTENT_MESH_ADDRESS,
+            abi: INTENT_MESH_ABI,
+            functionName: 'submitProof',
+            args: [BigInt(intentId), asBytes32(gpsHash), asBytes32(photoHash)],
+        });
+    };
+
+    const settle = async (intentId: number) => {
+        writeContract({
+            address: INTENT_MESH_ADDRESS,
+            abi: INTENT_MESH_ABI,
+            functionName: 'settle',
             args: [BigInt(intentId)],
         });
     };
 
     return {
+        createAgent,
         createIntent,
-        submitOffer,
-        acceptOffer,
-        settleIntent,
+        broadcastIntent,
+        acceptIntent,
+        lockEscrow,
+        startExecution,
+        submitProof,
+        settle,
         hash,
         error,
         isPending,
@@ -60,8 +115,8 @@ export function useMeshForge() {
 
 export function useAgentReputation(address: `0x${string}`) {
     const { data, isLoading } = useReadContract({
-        address: MESH_FORGE_ADDRESS,
-        abi: MESH_FORGE_ABI,
+        address: AGENT_REGISTRY_ADDRESS,
+        abi: AGENT_REGISTRY_ABI,
         functionName: 'getAgentProfile',
         args: [address],
     });
@@ -76,8 +131,8 @@ export function useAgentReputation(address: `0x${string}`) {
 
 export function useIntents() {
     const { data: count } = useReadContract({
-        address: MESH_FORGE_ADDRESS,
-        abi: MESH_FORGE_ABI,
+        address: INTENT_MESH_ADDRESS,
+        abi: INTENT_MESH_ABI,
         functionName: 'intentCount',
     });
 
@@ -86,8 +141,8 @@ export function useIntents() {
 
     const { data: intentsRaw, isLoading } = useReadContracts({
         contracts: ids.map((id) => ({
-            address: MESH_FORGE_ADDRESS,
-            abi: MESH_FORGE_ABI,
+            address: INTENT_MESH_ADDRESS,
+            abi: INTENT_MESH_ABI,
             functionName: 'getIntent',
             args: [BigInt(id)],
         })),
@@ -97,35 +152,34 @@ export function useIntents() {
         if (result.status === 'failure' || !result.result) return null;
         const i = result.result as unknown as {
             id: bigint;
-            creator: string;
+            requester: string;
             title: string;
             description: string;
-            amount: bigint;
-            deadline: bigint;
+            value: bigint;
+            createdAt: bigint;
             status: number;
         };
         return {
             id: i.id.toString(),
-            creatorId: i.creator,
+            creatorId: i.requester,
             title: i.title,
             description: i.description,
-            amount: Number(formatEther(i.amount)),
-            deadline: Number(i.deadline),
-            status: ['open', 'active', 'completed'][i.status] || 'open',
-            // Default/Placeholder for missing fields
+            amount: Number(formatEther(i.value)),
+            deadline: 0,
+            status: mapIntentStatus(i.status),
             currency: 'cUSD',
             location: 'On-Chain',
             category: 'General',
             skills: [],
             minReputation: 0,
             confidence: 100,
-            creatorName: `${i.creator.slice(0, 6)}...${i.creator.slice(-4)}`,
-            createdAt: new Date().toISOString(), // In a real app, fetch block timestamp
-            broadcastTime: 0, // Calculated in UI or fetch block timestamp
-            offers: [], // Would need another call to fetch offers
+            creatorName: `${i.requester.slice(0, 6)}...${i.requester.slice(-4)}`,
+            createdAt: new Date(Number(i.createdAt) * 1000).toISOString(),
+            broadcastTime: 0,
+            offers: [],
             merkleHash: '',
             notes: '',
-        } as any; // Cast to any to avoid strict type checks for now, or import Intent type
+        } as Intent;
     }).filter(Boolean) || [];
 
     return { intents, isLoading };
@@ -133,8 +187,8 @@ export function useIntents() {
 
 export function useIntent(id: number | undefined) {
     const { data: result, isLoading } = useReadContract({
-        address: MESH_FORGE_ADDRESS,
-        abi: MESH_FORGE_ABI,
+        address: INTENT_MESH_ADDRESS,
+        abi: INTENT_MESH_ABI,
         functionName: 'getIntent',
         args: id !== undefined ? [BigInt(id)] : undefined,
         query: {
@@ -146,34 +200,34 @@ export function useIntent(id: number | undefined) {
         if (!result) return null;
         const i = result as unknown as {
             id: bigint;
-            creator: string;
+            requester: string;
             title: string;
             description: string;
-            amount: bigint;
-            deadline: bigint;
+            value: bigint;
+            createdAt: bigint;
             status: number;
         };
         return {
             id: i.id.toString(),
-            creatorId: i.creator,
+            creatorId: i.requester,
             title: i.title,
             description: i.description,
-            amount: Number(formatEther(i.amount)),
-            deadline: Number(i.deadline),
-            status: ['open', 'active', 'completed'][i.status] || 'open',
+            amount: Number(formatEther(i.value)),
+            deadline: 0,
+            status: mapIntentStatus(i.status),
             currency: 'cUSD',
             location: 'On-Chain',
             category: 'General',
             skills: [],
             minReputation: 0,
             confidence: 100,
-            creatorName: `${i.creator.slice(0, 6)}...${i.creator.slice(-4)}`,
-            createdAt: new Date().toISOString(),
+            creatorName: `${i.requester.slice(0, 6)}...${i.requester.slice(-4)}`,
+            createdAt: new Date(Number(i.createdAt) * 1000).toISOString(),
             broadcastTime: 0,
             offers: [],
             merkleHash: '',
             notes: '',
-        } as any;
+        } as Intent;
     }, [result]);
 
     return { intent, isLoading };

@@ -7,19 +7,19 @@ import { cn } from '@/lib/utils';
 export const EscrowCard = () => {
     const { currentStep, escrowAmount, escrowContractAddress, escrowTxHash } = useExecutionStore();
 
-    const isLocked = currentStep !== 'intent_accepted';
+    const isLocked = ['escrow_locked', 'execution_started', 'proof_submitted'].includes(currentStep);
 
     return (
-        <div className="app-card p-6 relative overflow-hidden bg-white">
+        <div className="app-card p-6 relative overflow-hidden">
             {/* Background Pattern */}
             <div className="absolute top-0 right-0 p-4 opacity-5">
-                <ShieldCheck className="w-24 h-24" />
+                <ShieldCheck className="w-24 h-24 text-white" />
             </div>
 
             {/* Status Badge */}
             <div className={`absolute top-6 right-6 px-4 py-1.5 rounded-full text-xs font-bold border shadow-sm flex items-center gap-2 ${isLocked
-                ? 'bg-gray-100 text-gray-500 border-gray-200'
-                : 'bg-green-50 text-green-700 border-green-200 shadow-[0_0_10px_rgba(74,222,128,0.2)]'
+                ? 'bg-white/10 text-gray-400 border-white/10'
+                : 'bg-green-500/10 text-green-400 border-green-500/20 shadow-[0_0_10px_rgba(74,222,128,0.2)]'
                 }`}>
                 {isLocked ? <Lock className="w-3 h-3" /> : <ShieldCheck className="w-3 h-3" />}
                 {isLocked ? 'Escrow Locked' : 'Funds Released'}
@@ -27,11 +27,11 @@ export const EscrowCard = () => {
 
             <div className="flex justify-between items-start mb-6">
                 <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Escrow Status</h3>
+                    <h3 className="text-sm font-medium text-gray-400 mb-1">Escrow Status</h3>
                     <div className="flex items-center gap-2">
                         <span className={cn(
                             "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border",
-                            isLocked ? "bg-green-50 text-green-700 border-green-200" : "bg-amber-50 text-amber-700 border-amber-200"
+                            isLocked ? "bg-green-500/10 text-green-400 border-green-500/20" : "bg-amber-500/10 text-amber-400 border-amber-500/20"
                         )}>
                             {isLocked ? (
                                 <>
@@ -46,20 +46,20 @@ export const EscrowCard = () => {
                     </div>
                 </div>
                 <div className="text-right">
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Amount</h3>
-                    <p className="text-2xl font-bold text-brand-dark">{escrowAmount} cUSD</p>
+                    <h3 className="text-sm font-medium text-gray-400 mb-1">Amount</h3>
+                    <p className="text-2xl font-bold text-white">{escrowAmount} cUSD</p>
                 </div>
             </div>
 
             <div className="space-y-3">
-                <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <div className="p-3 bg-white/5 rounded-lg border border-white/10">
                     <div className="flex justify-between items-center mb-1">
-                        <span className="text-xs text-gray-500">Contract Address</span>
+                        <span className="text-xs text-gray-400">Contract Address</span>
                         <a href="#" className="flex items-center gap-1 text-[10px] text-brand-primary hover:underline">
                             View on Explorer <ExternalLink className="w-3 h-3" />
                         </a>
                     </div>
-                    <p className="font-mono text-xs text-gray-700 break-all">
+                    <p className="font-mono text-xs text-app-text-secondary break-all">
                         {escrowContractAddress || '0x...'}
                     </p>
                 </div>
