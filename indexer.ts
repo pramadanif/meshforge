@@ -1,25 +1,25 @@
 import 'dotenv/config';
-import { Prisma } from '@prisma/client';
 import { createPublicClient, http, parseAbiItem } from 'viem';
-import { celoAlfajores } from 'viem/chains';
+import { celoSepolia } from 'viem/chains';
 import { createClient as createRedisClient } from 'redis';
 import { prisma } from './src/lib/prisma';
 
-const intentMeshAddress = process.env.INTENT_MESH_ADDRESS as `0x${string}`;
-const agentRegistryAddress = process.env.AGENT_REGISTRY_ADDRESS as `0x${string}`;
+const intentMeshAddress = (process.env.INTENT_MESH_ADDRESS ?? '0xDfef62cf7516508B865440E5819e5435e69adceb') as `0x${string}`;
+const agentRegistryAddress = (process.env.AGENT_REGISTRY_ADDRESS ?? '0x93dBc50500C7817eEFFA29E44750D388687D19F4') as `0x${string}`;
 
 if (!intentMeshAddress || !agentRegistryAddress) {
   throw new Error('Missing INTENT_MESH_ADDRESS or AGENT_REGISTRY_ADDRESS');
 }
 
 const client = createPublicClient({
-  chain: celoAlfajores,
-  transport: http(process.env.CELO_RPC_URL ?? 'https://alfajores-forno.celo-testnet.org'),
+  chain: celoSepolia,
+  transport: http(process.env.CELO_RPC_URL ?? 'https://forno.celo-sepolia.celo-testnet.org'),
 });
 
 const redis = createRedisClient({ url: process.env.REDIS_URL });
 
 const events = {
+  IntentBroadcasted: parseAbiItem('event IntentBroadcasted(uint256 indexed intentId, uint256 indexed requesterAgentId, address requester, string title, uint256 value)'),
   IntentAccepted: parseAbiItem('event IntentAccepted(uint256 indexed intentId, uint256 indexed executorAgentId, address indexed executor)'),
   EscrowLocked: parseAbiItem('event EscrowLocked(uint256 indexed intentId, uint256 amount)'),
   ExecutionStarted: parseAbiItem('event ExecutionStarted(uint256 indexed intentId)'),
@@ -29,6 +29,7 @@ const events = {
 } as const;
 
 type Lifecycle =
+  | 'BROADCASTED'
   | 'ACCEPTED'
   | 'ESCROW_LOCKED'
   | 'EXECUTION_STARTED'
@@ -103,6 +104,24 @@ async function upsertAgentReputation(agentId: number) {
 
 async function main() {
   await redis.connect();
+
+  client.watchEvent({
+    address: intentMeshAddress,
+    event: events.IntentBroadcasted,
+    onLogs: async (logs) => {
+      for (const log of logs) {
+        const args = log.args as { intentId: bigint; requesterAgentId: bigint; requester: `0x${string}`; title: string; value: bigint };
+        const intentId = Number(args.intentId);
+        await upsertIntentExecutionState(intentId, 'BROADCASTED', log.transactionHash);
+        await persistExecutionLog('IntentBroadcasted', intentId, {
+          requesterAgentId: Number(args.requesterAgentId),
+          requester: args.requester,
+          title: args.title,
+          value: args.value.toString(),
+        }, log.transactionHash, log.blockNumber, log.logIndex);
+      }
+    },
+  });
 
   client.watchEvent({
     address: intentMeshAddress,
@@ -200,7 +219,7 @@ async function main() {
     },
   });
 
-  console.log('Indexer started: watching IntentAccepted, EscrowLocked, ExecutionStarted, ProofSubmitted, SettlementReleased, SettlementRecorded');
+  console.log('Indexer started: watching IntentBroadcasted, IntentAccepted, EscrowLocked, ExecutionStarted, ProofSubmitted, SettlementReleased, SettlementRecorded');
 }
 
 main().catch(async (error) => {

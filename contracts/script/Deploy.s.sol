@@ -7,7 +7,7 @@ import {MeshVault} from "../src/MeshVault.sol";
 import {IntentMesh} from "../src/IntentMesh.sol";
 import {AgentFactory} from "../src/AgentFactory.sol";
 
-/// @title Deploy — Deploys all MeshForge v2 ERC-8004 contracts to Celo Alfajores
+/// @title Deploy — Deploys all MeshForge v2 ERC-8004 contracts to Celo Sepolia
 contract Deploy is Script {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");

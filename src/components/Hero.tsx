@@ -15,7 +15,7 @@ export const Hero: React.FC = () => {
             
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 backdrop-blur-sm border border-brand-primary/20 text-brand-primary text-xs font-bold tracking-wider uppercase mb-8 shadow-sm">
               <span className="flex h-2 w-2 rounded-full bg-brand-primary animate-pulse"></span>
-              Live on Celo Alfajores
+              Live on Celo Sepolia
             </div>
             
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-display font-black text-white leading-[1.1] mb-8 tracking-tight">

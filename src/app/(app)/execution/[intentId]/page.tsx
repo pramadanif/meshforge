@@ -23,7 +23,7 @@ export default function ExecutionPage() {
     // Fetch Intent Data
     const { intent, isLoading } = useIntent(isNaN(intentId) ? undefined : intentId);
     const { address } = useAccount();
-    const { settle, isPending: isSettling } = useMeshForge();
+    const { settle, isPending: isSettling, agentWalletAddress } = useMeshForge();
 
     const { setTrackedIntent, currentStep } = useExecutionStore();
 
@@ -67,7 +67,8 @@ export default function ExecutionPage() {
         );
     }
 
-    const isCreator = address && intent.creatorId.toLowerCase() === address.toLowerCase();
+    const isCreator = (!!agentWalletAddress && intent.creatorId.toLowerCase() === agentWalletAddress.toLowerCase()) ||
+        (!!address && intent.creatorId.toLowerCase() === address.toLowerCase());
     const canSettle = isCreator && currentStep === 'proof_submitted';
 
     return (

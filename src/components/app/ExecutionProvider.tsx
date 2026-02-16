@@ -1,8 +1,10 @@
 'use client';
 
 import React from 'react';
-import { useAccount, usePublicClient, useWatchContractEvent } from 'wagmi';
+import { useAccount, usePublicClient, useReadContract, useWatchContractEvent } from 'wagmi';
 import {
+    AGENT_FACTORY_ABI,
+    AGENT_FACTORY_ADDRESS,
     AGENT_REGISTRY_ABI,
     AGENT_REGISTRY_ADDRESS,
     INTENT_MESH_ABI,
@@ -14,6 +16,20 @@ export function ExecutionProvider({ children }: { children: React.ReactNode }) {
     const { trackedIntentId, onIntentAccepted, onEscrowLocked, onExecutionStarted, onProofSubmitted, onSettlementReleased, onSettlementRecorded, setReputation } = useExecutionStore();
     const { address } = useAccount();
     const publicClient = usePublicClient();
+
+    const { data: controllerWallet } = useReadContract({
+        address: AGENT_FACTORY_ADDRESS,
+        abi: AGENT_FACTORY_ABI,
+        functionName: 'controllerToWallet',
+        args: address ? [address] : undefined,
+        query: {
+            enabled: !!address,
+        },
+    });
+
+    const agentWallet = controllerWallet && controllerWallet !== '0x0000000000000000000000000000000000000000'
+        ? controllerWallet
+        : undefined;
 
     const isTracked = (intentId: bigint) => trackedIntentId !== null && Number(intentId) === trackedIntentId;
 
@@ -92,12 +108,12 @@ export function ExecutionProvider({ children }: { children: React.ReactNode }) {
                 if (!args.intentId || !isTracked(args.intentId)) continue;
                 onSettlementRecorded(Number(args.intentId), log.transactionHash);
 
-                if (!publicClient || !address) continue;
+                if (!publicClient || !agentWallet) continue;
                 const profile = await publicClient.readContract({
                     address: AGENT_REGISTRY_ADDRESS,
                     abi: AGENT_REGISTRY_ABI,
                     functionName: 'getAgentProfile',
-                    args: [address],
+                    args: [agentWallet],
                 });
                 const reputation = profile[1] as bigint;
                 setReputation(Number(reputation));

@@ -3,15 +3,17 @@ import {
   createPublicClient,
   createWalletClient,
   encodeFunctionData,
+  Hex,
   http,
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { celoAlfajores } from 'viem/chains';
+import { celoSepolia } from 'viem/chains';
 
-const intentMeshAddress = process.env.INTENT_MESH_ADDRESS as `0x${string}`;
+const intentMeshAddress = (process.env.INTENT_MESH_ADDRESS ?? '0xDfef62cf7516508B865440E5819e5435e69adceb') as `0x${string}`;
 const relayerPrivateKey = process.env.RELAYER_PRIVATE_KEY as `0x${string}`;
-const x402Endpoint = process.env.X402_ENDPOINT;
-const x402ApiKey = process.env.X402_API_KEY;
+const x402Endpoint = process.env.THIRDWEB_X402_ENDPOINT ?? process.env.X402_ENDPOINT;
+const x402ApiKey = process.env.THIRDWEB_X402_API_KEY ?? process.env.X402_API_KEY;
+const requireX402 = (process.env.REQUIRE_X402 ?? 'true') === 'true';
 
 if (!intentMeshAddress || !relayerPrivateKey) {
   throw new Error('Missing INTENT_MESH_ADDRESS or RELAYER_PRIVATE_KEY');
@@ -44,14 +46,14 @@ const intentMeshAbi = [
 const account = privateKeyToAccount(relayerPrivateKey);
 
 const publicClient = createPublicClient({
-  chain: celoAlfajores,
-  transport: http(process.env.CELO_RPC_URL ?? 'https://alfajores-forno.celo-testnet.org'),
+  chain: celoSepolia,
+  transport: http(process.env.CELO_RPC_URL ?? 'https://forno.celo-sepolia.celo-testnet.org'),
 });
 
 const walletClient = createWalletClient({
   account,
-  chain: celoAlfajores,
-  transport: http(process.env.CELO_RPC_URL ?? 'https://alfajores-forno.celo-testnet.org'),
+  chain: celoSepolia,
+  transport: http(process.env.CELO_RPC_URL ?? 'https://forno.celo-sepolia.celo-testnet.org'),
 });
 
 async function submitMetaTransaction(functionName: 'lockEscrow' | 'startExecution' | 'settle', intentId: bigint) {
@@ -69,8 +71,10 @@ async function submitMetaTransaction(functionName: 'lockEscrow' | 'startExecutio
         'x-api-key': x402ApiKey,
       },
       body: JSON.stringify({
-        chainId: celoAlfajores.id,
+        chainId: celoSepolia.id,
         to: intentMeshAddress,
+        functionName,
+        intentId: intentId.toString(),
         data,
         fromAgent: account.address,
       }),
@@ -80,8 +84,26 @@ async function submitMetaTransaction(functionName: 'lockEscrow' | 'startExecutio
       const text = await response.text();
       throw new Error(`x402 relay rejected request: ${text}`);
     }
+
+    const x402Result = (await response.json().catch(() => ({}))) as {
+      txHash?: Hex;
+      transactionHash?: Hex;
+      hash?: Hex;
+    };
+
+    const relayedTxHash = x402Result.txHash ?? x402Result.transactionHash ?? x402Result.hash;
+    if (relayedTxHash) {
+      return publicClient.waitForTransactionReceipt({ hash: relayedTxHash });
+    }
+
+    if (requireX402) {
+      throw new Error('x402 relay response missing tx hash while REQUIRE_X402=true');
+    }
+  } else if (requireX402) {
+    throw new Error('Missing X402_ENDPOINT or X402_API_KEY while REQUIRE_X402=true');
   }
 
+  // Optional fallback for local development only.
   const txHash = await walletClient.writeContract({
     address: intentMeshAddress,
     abi: intentMeshAbi,

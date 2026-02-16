@@ -2,14 +2,30 @@
 
 import React, { useState } from 'react';
 import { Plus, Grid3X3, List, SlidersHorizontal, Loader2 } from 'lucide-react';
+import { useAccount, useReadContract } from 'wagmi';
 import { useIntents } from '@/hooks/useMeshForge';
 import { IntentCard } from '@/components/intents/IntentCard';
 import { IntentDetailModal } from '@/components/intents/IntentDetailModal';
 import { CreateIntentModal } from '@/components/intents/CreateIntentModal';
+import { AGENT_FACTORY_ABI, AGENT_FACTORY_ADDRESS } from '@/lib/contracts';
 import { Intent } from '@/types';
 
 export default function IntentsPage() {
     const { intents: allIntents, isLoading } = useIntents();
+    const { address } = useAccount();
+    const { data: controllerWallet } = useReadContract({
+        address: AGENT_FACTORY_ADDRESS,
+        abi: AGENT_FACTORY_ABI,
+        functionName: 'controllerToWallet',
+        args: address ? [address] : undefined,
+        query: {
+            enabled: !!address,
+        },
+    });
+
+    const myAgentWallet = controllerWallet && controllerWallet !== '0x0000000000000000000000000000000000000000'
+        ? controllerWallet.toLowerCase()
+        : null;
     const [tab, setTab] = useState<'discover' | 'my' | 'offers'>('discover');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [selectedIntent, setSelectedIntent] = useState<Intent | null>(null);
@@ -23,7 +39,7 @@ export default function IntentsPage() {
     ];
 
     const filteredIntents = (allIntents as Intent[]).filter((i) => {
-        if (tab === 'my') return i.creatorId === 'agent-self'; // TODO: match wallet address
+        if (tab === 'my') return !!myAgentWallet && i.creatorId.toLowerCase() === myAgentWallet;
         if (tab === 'offers') return i.offers.length > 0;
         return true;
     });

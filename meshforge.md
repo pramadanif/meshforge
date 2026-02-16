@@ -77,10 +77,41 @@ Frontend (Demo)
 Next.js 15 (App Router) + Tailwind + shadcn/ui + Wagmi
 Clean showcase
 Deployment
-Celo Alfajores testnet (bisa mainnet kalau mau)
+Celo Sepolia testnet (opsi naik ke mainnet saat production-ready)
 Gas murah
 Monitoring
 8004scan.io + Celo Explorer + custom dashboard
 Onchain proof
+
+## Track 2 Readiness Matrix (Updated)
+
+### ✅ Sudah Implemented
+
+1. Onchain Audit & Verifiability (core)
+	- Intent, accept, escrow, execution, proof, settlement, settlement-recorded sudah emitted onchain.
+	- Indexer sudah persist semua lifecycle event di Postgres (Prisma) + execution log.
+2. SDK + Developer Examples (core DX)
+	- SDK minimal untuk register/broadcast/accept intent tersedia.
+	- Contoh frontend + backend integration sudah ada.
+3. Real-Time Execution Visibility (core)
+	- Event-driven UI sudah subscribe lifecycle via useWatchContractEvent.
+4. Celo Sepolia Migration
+	- Stack deploy dan runtime sudah pindah dari Alfajores ke Celo Sepolia.
+
+### 🟡 Partially Done / Perlu Penguatan
+
+1. Cross-Border Micropay Demo
+	- Settlement cUSD onchain sudah jalan.
+	- Routing ke local stablecoin bridge + multi-country scripted scenario belum final.
+2. Real-Time Dashboard “Holy Shit” Layer
+	- Execution timeline live sudah ada.
+	- Trust graph visual + multi-agent connection graph belum final.
+
+### ❌ Belum Implemented (High Impact)
+
+1. Merkle Proof per offchain step (verifiable offchain computation commitment)
+2. Human Oracle + ZK fallback (SelfClaw/SelfProtocol flow onchain trigger)
+3. Pre-recorded demo backup asset (video + deterministic replay script)
+4. Onchain verifiable semantic top-N matching
 
 

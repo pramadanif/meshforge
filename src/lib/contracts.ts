@@ -1,7 +1,7 @@
-export const INTENT_MESH_ADDRESS = (process.env.NEXT_PUBLIC_INTENT_MESH_ADDRESS ?? '0x0000000000000000000000000000000000000000') as `0x${string}`;
-export const AGENT_REGISTRY_ADDRESS = (process.env.NEXT_PUBLIC_AGENT_REGISTRY_ADDRESS ?? '0x0000000000000000000000000000000000000000') as `0x${string}`;
-export const AGENT_FACTORY_ADDRESS = (process.env.NEXT_PUBLIC_AGENT_FACTORY_ADDRESS ?? '0x0000000000000000000000000000000000000000') as `0x${string}`;
-export const MESH_VAULT_ADDRESS = (process.env.NEXT_PUBLIC_MESH_VAULT_ADDRESS ?? '0x0000000000000000000000000000000000000000') as `0x${string}`;
+export const INTENT_MESH_ADDRESS = (process.env.NEXT_PUBLIC_INTENT_MESH_ADDRESS ?? '0xDfef62cf7516508B865440E5819e5435e69adceb') as `0x${string}`;
+export const AGENT_REGISTRY_ADDRESS = (process.env.NEXT_PUBLIC_AGENT_REGISTRY_ADDRESS ?? '0x93dBc50500C7817eEFFA29E44750D388687D19F4') as `0x${string}`;
+export const AGENT_FACTORY_ADDRESS = (process.env.NEXT_PUBLIC_AGENT_FACTORY_ADDRESS ?? '0xc679034e29A1D5E03fd4DfBF2DE981D4b758aE5A') as `0x${string}`;
+export const MESH_VAULT_ADDRESS = (process.env.NEXT_PUBLIC_MESH_VAULT_ADDRESS ?? '0x875507ef1fE7b067eAFea09BddFF193c30f1D21B') as `0x${string}`;
 
 export const INTENT_MESH_ABI = [
     {
@@ -86,6 +86,18 @@ export const INTENT_MESH_ABI = [
                     { name: 'createdAt', type: 'uint256', internalType: 'uint256' },
                 ],
             },
+        ],
+    },
+    {
+        type: 'event',
+        anonymous: false,
+        name: 'IntentBroadcasted',
+        inputs: [
+            { indexed: true, name: 'intentId', type: 'uint256', internalType: 'uint256' },
+            { indexed: true, name: 'requesterAgentId', type: 'uint256', internalType: 'uint256' },
+            { indexed: false, name: 'requester', type: 'address', internalType: 'address' },
+            { indexed: false, name: 'title', type: 'string', internalType: 'string' },
+            { indexed: false, name: 'value', type: 'uint256', internalType: 'uint256' },
         ],
     },
     {
@@ -183,5 +195,18 @@ export const AGENT_FACTORY_ABI = [
         stateMutability: 'view',
         inputs: [{ name: '', type: 'address', internalType: 'address' }],
         outputs: [{ name: '', type: 'address', internalType: 'address' }],
+    },
+] as const;
+
+export const AGENT_WALLET_ABI = [
+    {
+        type: 'function',
+        name: 'execute',
+        stateMutability: 'payable',
+        inputs: [
+            { name: 'target', type: 'address', internalType: 'address' },
+            { name: 'data', type: 'bytes', internalType: 'bytes' },
+        ],
+        outputs: [{ name: '', type: 'bytes', internalType: 'bytes' }],
     },
 ] as const;

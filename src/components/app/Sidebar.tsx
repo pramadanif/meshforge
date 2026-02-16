@@ -42,7 +42,7 @@ export function Sidebar() {
             <div className="p-3 border-t border-app-border">
                 <div className="bg-white/5 rounded-xl p-4 border border-app-border">
                     <p className="text-xs font-bold text-brand-primary mb-1">ERC-8004 Active</p>
-                    <p className="text-xs text-app-text-secondary">Agent wallet registered on Celo Alfajores</p>
+                    <p className="text-xs text-app-text-secondary">Agent wallet registered on Celo Sepolia</p>
                     <div className="flex items-center gap-1.5 mt-2">
                         <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                         <span className="text-xs text-green-400 font-medium">Live</span>

@@ -56,7 +56,7 @@ export function CreateIntentModal({ isOpen, onClose }: CreateIntentModalProps) {
                     </div>
                     <h3 className="text-xl font-bold text-white">✅ Transaction Sent!</h3>
                     <p className="text-sm text-app-text-secondary max-w-sm mx-auto">
-                        Your intent is being created on Celo Alfajores.
+                        Your intent is being created on Celo Sepolia.
                     </p>
                     {hash && (
                         <div className="bg-white/[0.03] rounded-xl p-3 border border-app-border/50 inline-block">

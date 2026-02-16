@@ -1,14 +1,15 @@
 import { useMemo } from 'react';
-import { useReadContract, useWriteContract, useReadContracts } from 'wagmi';
+import { useAccount, useReadContract, useWriteContract, useReadContracts } from 'wagmi';
 import {
     AGENT_FACTORY_ABI,
     AGENT_FACTORY_ADDRESS,
     AGENT_REGISTRY_ABI,
     AGENT_REGISTRY_ADDRESS,
+    AGENT_WALLET_ABI,
     INTENT_MESH_ABI,
     INTENT_MESH_ADDRESS,
 } from '@/lib/contracts';
-import { formatEther, parseEther, pad, stringToHex } from 'viem';
+import { encodeFunctionData, formatEther, parseEther, pad, stringToHex } from 'viem';
 import type { Intent } from '@/types';
 
 function asBytes32(value: string) {
@@ -22,11 +23,54 @@ function mapIntentStatus(status: number): 'open' | 'accepted' | 'in_progress' | 
     return 'open';
 }
 
+type IntentMeshFunctionName = 'broadcastIntent' | 'acceptIntent' | 'lockEscrow' | 'startExecution' | 'submitProof' | 'settle';
+type IntentMeshArgs =
+    | readonly [string, string, bigint]
+    | readonly [bigint]
+    | readonly [bigint, `0x${string}`, `0x${string}`];
+
 export function useMeshForge() {
-    const { writeContract, data: hash, error, isPending } = useWriteContract();
+    const { address } = useAccount();
+    const { writeContractAsync, data: hash, error, isPending } = useWriteContract();
+
+    const { data: agentWalletAddress } = useReadContract({
+        address: AGENT_FACTORY_ADDRESS,
+        abi: AGENT_FACTORY_ABI,
+        functionName: 'controllerToWallet',
+        args: address ? [address] : undefined,
+        query: {
+            enabled: !!address,
+        },
+    });
+
+    const resolvedAgentWallet = (agentWalletAddress && agentWalletAddress !== '0x0000000000000000000000000000000000000000')
+        ? agentWalletAddress
+        : null;
+
+    const executeViaAgentWallet = async (
+        functionName: IntentMeshFunctionName,
+        args: IntentMeshArgs
+    ) => {
+        if (!resolvedAgentWallet) {
+            throw new Error('No AgentWallet found for connected controller. Create your agent first.');
+        }
+
+        const calldata = encodeFunctionData({
+            abi: INTENT_MESH_ABI,
+            functionName,
+            args,
+        });
+
+        return writeContractAsync({
+            address: resolvedAgentWallet,
+            abi: AGENT_WALLET_ABI,
+            functionName: 'execute',
+            args: [INTENT_MESH_ADDRESS, calldata],
+        });
+    };
 
     const createAgent = async (metadataURI: string) => {
-        writeContract({
+        return writeContractAsync({
             address: AGENT_FACTORY_ADDRESS,
             abi: AGENT_FACTORY_ABI,
             functionName: 'createAgent',
@@ -35,12 +79,7 @@ export function useMeshForge() {
     };
 
     const broadcastIntent = async (title: string, description: string, amount: string) => {
-        writeContract({
-            address: INTENT_MESH_ADDRESS,
-            abi: INTENT_MESH_ABI,
-            functionName: 'broadcastIntent',
-            args: [title, description, parseEther(amount)],
-        });
+        return executeViaAgentWallet('broadcastIntent', [title, description, parseEther(amount)]);
     };
 
     const createIntent = async (
@@ -54,48 +93,23 @@ export function useMeshForge() {
     };
 
     const acceptIntent = async (intentId: number) => {
-        writeContract({
-            address: INTENT_MESH_ADDRESS,
-            abi: INTENT_MESH_ABI,
-            functionName: 'acceptIntent',
-            args: [BigInt(intentId)],
-        });
+        return executeViaAgentWallet('acceptIntent', [BigInt(intentId)]);
     };
 
     const lockEscrow = async (intentId: number) => {
-        writeContract({
-            address: INTENT_MESH_ADDRESS,
-            abi: INTENT_MESH_ABI,
-            functionName: 'lockEscrow',
-            args: [BigInt(intentId)],
-        });
+        return executeViaAgentWallet('lockEscrow', [BigInt(intentId)]);
     };
 
     const startExecution = async (intentId: number) => {
-        writeContract({
-            address: INTENT_MESH_ADDRESS,
-            abi: INTENT_MESH_ABI,
-            functionName: 'startExecution',
-            args: [BigInt(intentId)],
-        });
+        return executeViaAgentWallet('startExecution', [BigInt(intentId)]);
     };
 
     const submitProof = async (intentId: number, gpsHash: string, photoHash: string) => {
-        writeContract({
-            address: INTENT_MESH_ADDRESS,
-            abi: INTENT_MESH_ABI,
-            functionName: 'submitProof',
-            args: [BigInt(intentId), asBytes32(gpsHash), asBytes32(photoHash)],
-        });
+        return executeViaAgentWallet('submitProof', [BigInt(intentId), asBytes32(gpsHash), asBytes32(photoHash)]);
     };
 
     const settle = async (intentId: number) => {
-        writeContract({
-            address: INTENT_MESH_ADDRESS,
-            abi: INTENT_MESH_ABI,
-            functionName: 'settle',
-            args: [BigInt(intentId)],
-        });
+        return executeViaAgentWallet('settle', [BigInt(intentId)]);
     };
 
     return {
@@ -107,6 +121,7 @@ export function useMeshForge() {
         startExecution,
         submitProof,
         settle,
+        agentWalletAddress: resolvedAgentWallet,
         hash,
         error,
         isPending,
@@ -152,12 +167,15 @@ export function useIntents() {
         if (result.status === 'failure' || !result.result) return null;
         const i = result.result as unknown as {
             id: bigint;
+            requesterAgentId: bigint;
+            executorAgentId: bigint;
             requester: string;
+            executor: string;
             title: string;
             description: string;
             value: bigint;
             createdAt: bigint;
-            status: number;
+            status: bigint;
         };
         return {
             id: i.id.toString(),
@@ -166,7 +184,7 @@ export function useIntents() {
             description: i.description,
             amount: Number(formatEther(i.value)),
             deadline: 0,
-            status: mapIntentStatus(i.status),
+            status: mapIntentStatus(Number(i.status)),
             currency: 'cUSD',
             location: 'On-Chain',
             category: 'General',
@@ -200,12 +218,15 @@ export function useIntent(id: number | undefined) {
         if (!result) return null;
         const i = result as unknown as {
             id: bigint;
+            requesterAgentId: bigint;
+            executorAgentId: bigint;
             requester: string;
+            executor: string;
             title: string;
             description: string;
             value: bigint;
             createdAt: bigint;
-            status: number;
+            status: bigint;
         };
         return {
             id: i.id.toString(),
@@ -214,7 +235,7 @@ export function useIntent(id: number | undefined) {
             description: i.description,
             amount: Number(formatEther(i.value)),
             deadline: 0,
-            status: mapIntentStatus(i.status),
+            status: mapIntentStatus(Number(i.status)),
             currency: 'cUSD',
             location: 'On-Chain',
             category: 'General',
