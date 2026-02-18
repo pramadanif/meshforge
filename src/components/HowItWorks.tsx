@@ -5,10 +5,10 @@ import { RevealOnScroll } from './RevealOnScroll';
 const steps = [
   { title: "Broadcast", desc: "Agent A publishes a 'Job Request' to the MeshForge topic." },
   { title: "Discovery", desc: "Agent B & C detect the intent and respond with bids." },
-  { title: "Negotiation", desc: "Agents handshake on price using x402 signatures." },
+  { title: "Negotiation", desc: "Agents handshake on price using x402 relay-assisted actions." },
   { title: "Execution", desc: "Service is performed off-chain (e.g. data fetch)." },
-  { title: "Verification", desc: "Proof of service is submitted onchain." },
-  { title: "Settlement", desc: "Funds unlock automatically. Reputation is updated." },
+  { title: "Verification", desc: "Proof + Merkle root commitments are submitted and verifiable onchain." },
+  { title: "Settlement", desc: "Funds unlock automatically, trust graph updates, and fallback dispute path stays available." },
 ];
 
 export const HowItWorks: React.FC = () => {
@@ -53,12 +53,10 @@ export const HowItWorks: React.FC = () => {
                    <h4 className="text-2xl font-display font-bold text-white mb-4">Built for Developers</h4>
                    <p className="text-gray-300 mb-6 text-lg">Integrate MeshForge into your agent framework in minutes using our SDK.</p>
                    <div className="bg-black/50 rounded-xl p-6 font-mono text-sm text-gray-300 shadow-inner overflow-x-auto w-full border border-white/5">
-                      <p><span className="text-purple-400">import</span> &#123; MeshAgent &#125; <span className="text-purple-400">from</span> <span className="text-brand-secondary">'@meshforge/sdk'</span>;</p>
-                      <p className="mt-2"><span className="text-purple-400">const</span> agent = <span className="text-purple-400">new</span> MeshAgent(&#123;</p>
-                      <p className="pl-4">chain: <span className="text-brand-secondary">'celo'</span>,</p>
-                      <p className="pl-4">capabilities: [<span className="text-brand-secondary">'logistics'</span>, <span className="text-brand-secondary">'negotiation'</span>]</p>
-                      <p>&#125;);</p>
-                      <p className="mt-2"><span className="text-purple-400">await</span> agent.connect();</p>
+                       <p><span className="text-purple-400">import</span> &#123; createMeshForgeSdk &#125; <span className="text-purple-400">from</span> <span className="text-brand-secondary">'@/lib/sdk'</span>;</p>
+                       <p className="mt-2"><span className="text-purple-400">const</span> sdk = createMeshForgeSdk(&#123; publicClient, walletClient, controller &#125;);</p>
+                       <p className="mt-2"><span className="text-purple-400">await</span> sdk.createAgent(<span className="text-brand-secondary">'ipfs://metadata.json'</span>);</p>
+                       <p><span className="text-purple-400">await</span> sdk.broadcastIntent(<span className="text-brand-secondary">'Need fuel'</span>, <span className="text-brand-secondary">'2L Nairobi CBD'</span>, <span className="text-brand-secondary">'0.85'</span>);</p>
                    </div>
                 </div>
                 <div className="flex-shrink-0 bg-white/5 p-8 rounded-3xl border border-white/10 flex flex-col gap-4 min-w-[250px] backdrop-blur-sm">
@@ -68,11 +66,11 @@ export const HowItWorks: React.FC = () => {
                    </div>
                    <div className="flex items-center gap-3 text-base font-medium text-white">
                       <CheckCircle2 className="text-brand-primary w-5 h-5" />
-                      Thirdweb Contracts
+                     Merkle Step Commitments
                    </div>
                    <div className="flex items-center gap-3 text-base font-medium text-white">
                       <CheckCircle2 className="text-brand-primary w-5 h-5" />
-                      SelfClaw Support
+                     Dispute Fallback Guardrail
                    </div>
                 </div>
              </div>

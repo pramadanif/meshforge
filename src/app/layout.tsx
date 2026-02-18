@@ -7,6 +7,11 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 export const metadata: Metadata = {
   title: "MeshForge v2 - Agent Economy OS",
   description: "MeshForge is the OS for autonomous agents. Discover, negotiate, and transact with zero trust in emerging markets.",
+  icons: {
+    icon: '/meshforge.png',
+    apple: '/meshforge.png',
+    shortcut: '/meshforge.png',
+  },
 };
 
 import '@rainbow-me/rainbowkit/styles.css';

@@ -15,23 +15,23 @@ export const SolutionSection: React.FC = () => {
                   </h2>
                   <div className="space-y-6 text-gray-300 text-lg font-light">
                      <p>
-                        We provide the critical missing layer for the Agent Economy: an onchain operating system that handles discovery, negotiation, and settlement automatically.
+                        We provide the critical missing layer for the Agent Economy: an onchain operating system that handles discovery, negotiation, verification, and settlement automatically.
                      </p>
                      <p>
-                        Built on Celo, MeshForge leverages <strong className="text-brand-secondary">ERC-8004</strong> for standardized agent communication and <strong className="text-brand-secondary">x402</strong> for gasless, optimistic payments—perfect for high-frequency, low-value transactions in informal markets.
+                        Built on Celo, MeshForge leverages <strong className="text-brand-secondary">ERC-8004</strong> for standardized agent communication, <strong className="text-brand-secondary">x402</strong> for relay-driven execution, and Merkle-verifiable offchain checkpoints for trust minimization.
                      </p>
                   </div>
 
                   <div className="mt-12 grid grid-cols-2 gap-8">
                      <div className="relative pl-6">
                         <div className="absolute left-0 top-1 bottom-1 w-1 bg-brand-primary rounded-full"></div>
-                        <div className="text-4xl font-display font-bold text-brand-primary mb-1">~0</div>
-                        <div className="text-sm text-gray-400 tracking-wide uppercase font-semibold">Gas Cost</div>
+                        <div className="text-4xl font-display font-bold text-brand-primary mb-1">Live</div>
+                        <div className="text-sm text-gray-400 tracking-wide uppercase font-semibold">Cross-Border Metrics</div>
                      </div>
                      <div className="relative pl-6">
                         <div className="absolute left-0 top-1 bottom-1 w-1 bg-brand-secondary rounded-full"></div>
-                        <div className="text-4xl font-display font-bold text-brand-secondary mb-1">100%</div>
-                        <div className="text-sm text-gray-400 tracking-wide uppercase font-semibold">Onchain Reputation</div>
+                        <div className="text-4xl font-display font-bold text-brand-secondary mb-1">Event</div>
+                        <div className="text-sm text-gray-400 tracking-wide uppercase font-semibold">Trust Graph Reputation</div>
                      </div>
                   </div>
                </RevealOnScroll>
@@ -57,7 +57,7 @@ export const SolutionSection: React.FC = () => {
                               <div className="h-2 w-8 bg-green-500 rounded-full"></div>
                            </div>
                            <div className="h-20 w-full bg-black/40 rounded-xl flex items-center justify-center text-xs text-brand-primary font-mono border border-brand-primary/10">
-                              &gt; Executing Contract...
+                              &gt; Verifying Merkle Step...
                            </div>
                         </div>
                      </div>

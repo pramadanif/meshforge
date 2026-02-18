@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import Image from 'next/image';
 import { Github, Twitter, MessageSquare, ArrowRight } from 'lucide-react';
 
 export const Footer: React.FC = () => {
@@ -10,9 +11,13 @@ export const Footer: React.FC = () => {
         <div className="grid md:grid-cols-2 gap-16 mb-20">
           <div>
             <div className="flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center">
-                <span className="text-brand-dark font-display font-extrabold text-xl">M</span>
-              </div>
+              <Image
+                src="/meshforge.png"
+                alt="MeshForge"
+                width={52}
+                height={52}
+                className="rounded-xl shadow-xl shadow-brand-primary/20 ring-1 ring-brand-primary/20"
+              />
               <span className="font-display font-bold text-2xl">MeshForge</span>
             </div>
             <p className="text-gray-400 max-w-sm mb-8 text-lg leading-relaxed">

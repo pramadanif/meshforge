@@ -23,11 +23,15 @@ function mapIntentStatus(status: number): 'open' | 'accepted' | 'in_progress' | 
     return 'open';
 }
 
-type IntentMeshFunctionName = 'broadcastIntent' | 'acceptIntent' | 'lockEscrow' | 'startExecution' | 'submitProof' | 'settle';
+type IntentMeshFunctionName = 'broadcastIntent' | 'acceptIntent' | 'lockEscrow' | 'startExecution' | 'submitProof' | 'commitMerkleRoot' | 'setCrossBorderRoute' | 'setCrossBorderStablecoins' | 'openDispute' | 'settle';
 type IntentMeshArgs =
     | readonly [string, string, bigint]
     | readonly [bigint]
-    | readonly [bigint, `0x${string}`, `0x${string}`];
+    | readonly [bigint, `0x${string}`, `0x${string}`]
+    | readonly [bigint, `0x${string}`, bigint]
+    | readonly [bigint, bigint, bigint]
+    | readonly [bigint, string, string]
+    | readonly [bigint, string];
 
 export function useMeshForge() {
     const { address } = useAccount();
@@ -112,6 +116,22 @@ export function useMeshForge() {
         return executeViaAgentWallet('settle', [BigInt(intentId)]);
     };
 
+    const commitMerkleRoot = async (intentId: number, merkleRoot: string, step: number) => {
+        return executeViaAgentWallet('commitMerkleRoot', [BigInt(intentId), asBytes32(merkleRoot), BigInt(step)]);
+    };
+
+    const setCrossBorderRoute = async (intentId: number, sourceRegion: number, destinationRegion: number) => {
+        return executeViaAgentWallet('setCrossBorderRoute', [BigInt(intentId), BigInt(sourceRegion), BigInt(destinationRegion)]);
+    };
+
+    const setCrossBorderStablecoins = async (intentId: number, sourceStable: string, destinationStable: string) => {
+        return executeViaAgentWallet('setCrossBorderStablecoins', [BigInt(intentId), sourceStable, destinationStable]);
+    };
+
+    const openDispute = async (intentId: number, reason: string) => {
+        return executeViaAgentWallet('openDispute', [BigInt(intentId), reason]);
+    };
+
     return {
         createAgent,
         createIntent,
@@ -120,6 +140,10 @@ export function useMeshForge() {
         lockEscrow,
         startExecution,
         submitProof,
+        commitMerkleRoot,
+        setCrossBorderRoute,
+        setCrossBorderStablecoins,
+        openDispute,
         settle,
         agentWalletAddress: resolvedAgentWallet,
         hash,
@@ -176,6 +200,11 @@ export function useIntents() {
             value: bigint;
             createdAt: bigint;
             status: bigint;
+            offchainMerkleRoot: `0x${string}`;
+            disputed: boolean;
+            fallbackResolved: boolean;
+            sourceRegion: bigint;
+            destinationRegion: bigint;
         };
         return {
             id: i.id.toString(),
@@ -195,8 +224,8 @@ export function useIntents() {
             createdAt: new Date(Number(i.createdAt) * 1000).toISOString(),
             broadcastTime: 0,
             offers: [],
-            merkleHash: '',
             notes: '',
+            merkleHash: i.offchainMerkleRoot,
         } as Intent;
     }).filter(Boolean) || [];
 
@@ -227,6 +256,11 @@ export function useIntent(id: number | undefined) {
             value: bigint;
             createdAt: bigint;
             status: bigint;
+            offchainMerkleRoot: `0x${string}`;
+            disputed: boolean;
+            fallbackResolved: boolean;
+            sourceRegion: bigint;
+            destinationRegion: bigint;
         };
         return {
             id: i.id.toString(),
@@ -246,8 +280,8 @@ export function useIntent(id: number | undefined) {
             createdAt: new Date(Number(i.createdAt) * 1000).toISOString(),
             broadcastTime: 0,
             offers: [],
-            merkleHash: '',
             notes: '',
+            merkleHash: i.offchainMerkleRoot,
         } as Intent;
     }, [result]);
 

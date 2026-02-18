@@ -1,26 +1,86 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Search, Grid3X3, List, SlidersHorizontal } from 'lucide-react';
-import { agents } from '@/data/mock';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Search, Grid3X3, List } from 'lucide-react';
 import { AgentCard } from '@/components/agents/AgentCard';
+import { Agent } from '@/types';
+import { apiUrl } from '@/lib/api';
+
+type ApiAgent = {
+    id: string;
+    name: string;
+    reputation: number;
+    completedIntents: number;
+    successRate: number;
+    totalVolume: number;
+    avgResponseTime: number;
+    location: string;
+    skills: string[];
+    status: 'online' | 'offline' | 'busy';
+    lastActive: string | null;
+    walletAddress: string;
+};
 
 export default function AgentsPage() {
+    const [agents, setAgents] = useState<Agent[]>([]);
+    const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-    const filteredAgents = agents.filter(
+    useEffect(() => {
+        let mounted = true;
+
+        const load = async () => {
+            try {
+                const res = await fetch(apiUrl('/api/agents'), { cache: 'no-store' });
+                const data = await res.json();
+                if (!mounted) return;
+
+                const rows = ((data?.agents ?? []) as ApiAgent[]).map((agent) => ({
+                    id: agent.id,
+                    name: agent.name,
+                    reputation: Number(agent.reputation.toFixed(2)),
+                    completedIntents: agent.completedIntents,
+                    successRate: agent.successRate,
+                    totalVolume: agent.totalVolume,
+                    avgResponseTime: agent.avgResponseTime,
+                    location: agent.location,
+                    skills: agent.skills,
+                    status: agent.status,
+                    lastActive: agent.lastActive ? new Date(agent.lastActive).toLocaleString() : 'N/A',
+                    walletAddress: agent.walletAddress,
+                    balanceCUSD: 0,
+                    joinedDate: 'N/A',
+                    activityStreak: 0,
+                }));
+
+                setAgents(rows);
+            } finally {
+                if (mounted) setLoading(false);
+            }
+        };
+
+        load();
+        const interval = setInterval(load, 15000);
+
+        return () => {
+            mounted = false;
+            clearInterval(interval);
+        };
+    }, []);
+
+    const filteredAgents = useMemo(() => agents.filter(
         (a) =>
             a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             a.skills.some((s: string) => s.toLowerCase().includes(searchQuery.toLowerCase())) ||
             a.location.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    ), [agents, searchQuery]);
 
     return (
         <div className="p-4 lg:p-6 max-w-6xl mx-auto">
             {/* Header */}
             <div className="mb-6">
-                <h1 className="text-2xl font-display font-bold text-brand-dark mb-1">Agent Directory</h1>
+                <h1 className="text-2xl font-display font-bold text-app-text mb-1">Agent Directory</h1>
                 <p className="text-sm text-app-text-secondary">{agents.length} registered agents | Browse by reputation, skill, or location</p>
             </div>
 
@@ -61,6 +121,10 @@ export default function AgentsPage() {
             </div>
 
             {/* Agent Cards */}
+            {loading && (
+                <div className="text-center py-12 text-app-text-secondary">Loading on-chain agents...</div>
+            )}
+
             <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4' : 'space-y-3'}>
                 {filteredAgents.map((agent) => (
                     <AgentCard key={agent.id} agent={agent} />

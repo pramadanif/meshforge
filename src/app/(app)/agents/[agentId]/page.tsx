@@ -1,37 +1,97 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Star, MapPin, MessageCircle, ArrowRight, CheckCircle, Clock, DollarSign, TrendingUp, ExternalLink } from 'lucide-react';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { agents, activityChartData } from '@/data/mock';
-import { Endorsement, Testimonial } from '@/types';
+import { apiUrl } from '@/lib/api';
+
+type AgentDetail = {
+    id: string;
+    name: string;
+    reputation: number;
+    completedIntents: number;
+    successRate: number;
+    totalVolume: number;
+    avgResponseTime: number;
+    location: string;
+    skills: string[];
+    status: 'online' | 'offline' | 'busy';
+    lastActive: string | null;
+    walletAddress: string;
+    penaltyPoints: number;
+};
+
+type ActivityItem = {
+    id: string;
+    title: string;
+    description: string;
+    timestamp: string;
+};
 
 export default function AgentProfilePage() {
     const { agentId } = useParams<{ agentId: string }>();
-    const agent = agents.find((a) => a.id === agentId);
+    const [agents, setAgents] = useState<AgentDetail[]>([]);
+    const [activities, setActivities] = useState<ActivityItem[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        let mounted = true;
+
+        const load = async () => {
+            try {
+                const [agentsRes, activityRes] = await Promise.all([
+                    fetch(apiUrl('/api/agents'), { cache: 'no-store' }),
+                    fetch(apiUrl('/api/activity'), { cache: 'no-store' }),
+                ]);
+
+                const agentsData = await agentsRes.json();
+                const activityData = await activityRes.json();
+
+                if (!mounted) return;
+                setAgents((agentsData?.agents ?? []) as AgentDetail[]);
+                setActivities((activityData?.items ?? []) as ActivityItem[]);
+            } finally {
+                if (mounted) setLoading(false);
+            }
+        };
+
+        load();
+        return () => {
+            mounted = false;
+        };
+    }, []);
+
+    const agent = useMemo(() => agents.find((a) => a.id === agentId), [agents, agentId]);
 
     if (!agent) {
         return (
             <div className="p-6 text-center">
-                <p className="text-app-text-secondary">Agent not found</p>
+                <p className="text-app-text-secondary">{loading ? 'Loading agent...' : 'Agent not found'}</p>
                 <Link href="/agents" className="text-app-neon text-sm mt-2 inline-block">← Back to directory</Link>
             </div>
         );
     }
 
     const reputationBreakdown = [
-        { label: 'Economic Volume', value: 87, color: 'bg-app-neon' },
+        { label: 'Economic Volume', value: Math.min(100, Math.round(agent.totalVolume / 10)), color: 'bg-app-neon' },
         { label: 'Success Rate', value: Math.round(agent.successRate), color: 'bg-blue-400' },
-        { label: 'Recency', value: 72, color: 'bg-amber-400' },
-        { label: 'Human Attestation', value: 64, color: 'bg-purple-400' },
+        { label: 'Recency', value: agent.status === 'online' ? 90 : 45, color: 'bg-amber-400' },
+        { label: 'Penalty Resistance', value: Math.max(0, 100 - agent.penaltyPoints), color: 'bg-purple-400' },
     ];
+
+    const activityChartData = activities.slice(0, 7).map((item, index) => ({
+        day: `D${index + 1}`,
+        intents: item.description.includes('Intent #') ? 1 : 0,
+    }));
+
+    const recentAgentActivities = activities.slice(0, 5);
 
     return (
         <div className="p-4 lg:p-6 max-w-4xl mx-auto">
             {/* Back */}
-            <Link href="/agents" className="inline-flex items-center gap-2 text-sm text-app-text-secondary hover:text-brand-dark transition-colors mb-6">
+            <Link href="/agents" className="inline-flex items-center gap-2 text-sm text-app-text-secondary hover:text-app-text transition-colors mb-6">
                 <ArrowLeft className="w-4 h-4" /> Back to directory
             </Link>
 
@@ -47,7 +107,7 @@ export default function AgentProfilePage() {
                     </div>
                     <div className="flex-1">
                         <div className="flex items-center gap-3 mb-1">
-                            <h1 className="text-xl font-display font-bold text-brand-dark">{agent.name}</h1>
+                            <h1 className="text-xl font-display font-bold text-app-text">{agent.name}</h1>
                             <StatusBadge status={agent.status} type="agent" />
                         </div>
                         <div className="flex items-center gap-3 text-sm text-app-text-secondary mb-2">
@@ -60,7 +120,7 @@ export default function AgentProfilePage() {
                         <div className="flex items-center gap-1.5 text-sm text-app-text-secondary mb-3">
                             <MapPin className="w-3.5 h-3.5" /> {agent.location}
                         </div>
-                        {agent.bio && <p className="text-sm text-app-text-secondary">{agent.bio}</p>}
+                        <p className="text-sm text-app-text-secondary">Last active: {agent.lastActive ? new Date(agent.lastActive).toLocaleString() : 'N/A'}</p>
                     </div>
                     <div className="flex gap-2 flex-shrink-0">
                         <button className="px-4 py-2 bg-white border border-app-border text-brand-dark text-sm font-medium rounded-xl hover:bg-brand-surface transition-colors">
@@ -86,7 +146,7 @@ export default function AgentProfilePage() {
                 ].map(({ icon: Icon, label, value, color }) => (
                     <div key={label} className="app-card p-4 text-center">
                         <Icon className={`w-5 h-5 ${color} mx-auto mb-2`} />
-                        <p className="text-lg font-bold text-brand-dark">{value}</p>
+                        <p className="text-lg font-bold text-app-text">{value}</p>
                         <p className="text-xs text-app-text-secondary">{label}</p>
                     </div>
                 ))}
@@ -94,13 +154,13 @@ export default function AgentProfilePage() {
 
             {/* Reputation Breakdown */}
             <div className="app-card p-5 mb-6">
-                <h3 className="text-sm font-bold text-brand-dark mb-4">Reputation Breakdown</h3>
+                <h3 className="text-sm font-bold text-app-text mb-4">Reputation Breakdown</h3>
                 <div className="space-y-3">
                     {reputationBreakdown.map(({ label, value, color }) => (
                         <div key={label}>
                             <div className="flex justify-between text-xs mb-1">
                                 <span className="text-app-text-secondary">{label}</span>
-                                <span className="text-brand-dark font-medium">{value}/100</span>
+                                <span className="text-app-text font-medium">{value}/100</span>
                             </div>
                             <div className="w-full bg-white/5 rounded-full h-2">
                                 <div className={`${color} rounded-full h-2 transition-all duration-500`} style={{ width: `${value}%` }} />
@@ -118,7 +178,7 @@ export default function AgentProfilePage() {
 
             {/* Activity Chart placeholder */}
             <div className="app-card p-5 mb-6">
-                <h3 className="text-sm font-bold text-brand-dark mb-4">Activity (Last 7 Days)</h3>
+                <h3 className="text-sm font-bold text-app-text mb-4">Activity (Recent Events)</h3>
                 <div className="flex items-end gap-2 h-32">
                     {activityChartData.map((d) => (
                         <div key={d.day} className="flex-1 flex flex-col items-center gap-1">
@@ -136,39 +196,26 @@ export default function AgentProfilePage() {
                 </div>
             </div>
 
-            {/* Skills & Endorsements */}
-            {agent.endorsements && agent.endorsements.length > 0 && (
-                <div className="app-card p-5 mb-6">
-                    <h3 className="text-sm font-bold text-brand-dark mb-4">Skills & Endorsements</h3>
-                    <div className="space-y-2">
-                        {agent.endorsements.map(({ skill, count }: Endorsement) => (
-                            <div key={skill} className="flex items-center justify-between bg-white/[0.03] rounded-xl px-4 py-3 border border-app-border/50">
-                                <span className="text-sm text-app-neon font-medium">{skill}</span>
-                                <span className="text-xs text-app-text-secondary">endorsed by <span className="text-brand-dark font-medium">{count}</span> agents</span>
-                            </div>
-                        ))}
-                    </div>
+            {/* Recent events */}
+            <div className="app-card p-5 mb-6">
+                <h3 className="text-sm font-bold text-app-text mb-4">Recent Network Events</h3>
+                <div className="space-y-3">
+                    {recentAgentActivities.length === 0 && (
+                        <p className="text-sm text-app-text-secondary">No recent activity indexed yet.</p>
+                    )}
+                    {recentAgentActivities.map((activity) => (
+                        <div key={activity.id} className="bg-white/[0.03] rounded-xl px-4 py-3 border border-app-border/50">
+                            <p className="text-sm text-app-text">{activity.title}</p>
+                            <p className="text-xs text-app-text-secondary mt-1">{activity.description}</p>
+                            <p className="text-[10px] text-app-text-secondary mt-2">{new Date(activity.timestamp).toLocaleString()}</p>
+                        </div>
+                    ))}
                 </div>
-            )}
-
-            {/* Testimonials */}
-            {agent.testimonials && agent.testimonials.length > 0 && (
-                <div className="app-card p-5 mb-6">
-                    <h3 className="text-sm font-bold text-brand-dark mb-4">Testimonials</h3>
-                    <div className="space-y-3">
-                        {agent.testimonials.map(({ agentName, text, date }: Testimonial, i: number) => (
-                            <div key={i} className="bg-white/[0.03] rounded-xl px-4 py-3 border border-app-border/50">
-                                <p className="text-sm text-app-text italic">&ldquo;{text}&rdquo;</p>
-                                <p className="text-xs text-app-text-secondary mt-2">— @{agentName} · {date}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
+            </div>
 
             {/* Wallet info */}
             <div className="app-card p-5">
-                <h3 className="text-sm font-bold text-brand-dark mb-3">Onchain Identity</h3>
+                <h3 className="text-sm font-bold text-app-text mb-3">Onchain Identity</h3>
                 <div className="flex items-center gap-3">
                     <code className="text-xs text-app-text-secondary font-mono bg-black/20 px-2 py-1 rounded">{agent.walletAddress}</code>
                     <a href="https://www.8004scan.io/" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 flex items-center gap-1 text-xs">

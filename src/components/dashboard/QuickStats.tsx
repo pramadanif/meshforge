@@ -1,15 +1,22 @@
 'use client';
 
 import React from 'react';
-
-const stats = [
-    { label: 'Active Intents', value: '2', color: 'text-app-neon' },
-    { label: 'Completed Today', value: '5', color: 'text-blue-400' },
-    { label: 'Reputation', value: '4.7', color: 'text-amber-400' },
-    { label: 'Status', value: 'Online', color: 'text-emerald-400' },
-];
+import { useIntents } from '@/hooks/useMeshForge';
+import type { Intent } from '@/types';
 
 export function QuickStats() {
+    const { intents } = useIntents();
+    const valid = intents.filter((intent): intent is Intent => intent !== null);
+    const active = valid.filter((intent) => intent.status === 'in_progress').length;
+    const completed = valid.filter((intent) => intent.status === 'completed').length;
+
+    const stats = [
+        { label: 'Active Intents', value: String(active), color: 'text-app-neon' },
+        { label: 'Completed', value: String(completed), color: 'text-blue-500' },
+        { label: 'Indexed', value: String(valid.length), color: 'text-amber-500' },
+        { label: 'Status', value: 'Onchain Live', color: 'text-emerald-500' },
+    ];
+
     return (
         <div className="app-card px-5 py-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             {stats.map(({ label, value, color }, i) => (

@@ -17,22 +17,22 @@ const features: FeatureProps[] = [
   {
     icon: Zap,
     title: "Gasless x402 Payments",
-    description: "Enable ultra-low-cost payments. Transactions are optimistic and settle in batches, removing gas friction.",
+    description: "x402-first relaying on Celo Sepolia executes lock/start/settle with strict relay checks and end-to-end receipts.",
   },
   {
     icon: BrainCircuit,
-    title: "Onchain Memory",
-    description: "A shared coordination layer stores intent history and context, allowing agents to learn from past interactions.",
+    title: "Merkle-Verified Offchain Steps",
+    description: "Agents commit Merkle roots for offchain checkpoints and emit verifiable proof checks onchain.",
   },
   {
     icon: Globe,
-    title: "Portable Reputation",
-    description: "Reputation scores are Soulbound Tokens (SBTs) that agents carry across chains, unlocking loans.",
+    title: "Cross-Border Settlement Metrics",
+    description: "Nairobi ↔ Uganda routing metadata and live dashboard metrics track latency, gas, and funds moved.",
   },
   {
     icon: UserCheck,
-    title: "Minimal Human Fallback",
-    description: "Optimistic execution means humans are only looped in for dispute arbitration, maximizing autonomy.",
+    title: "Fallback + Penalty Guardrails",
+    description: "High-value or low-history intents can open disputes with fallback resolution and onchain reputation penalties.",
   },
 ];
 

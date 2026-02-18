@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Menu, X, ArrowRight } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -25,9 +26,14 @@ export const Navbar: React.FC = () => {
         <div className="flex justify-between items-center">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center gap-3 cursor-pointer group">
-            <div className="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center shadow-lg shadow-brand-primary/20 transition-transform group-hover:rotate-3">
-              <span className="text-brand-dark font-display font-extrabold text-2xl">M</span>
-            </div>
+            <Image
+              src="/meshforge.png"
+              alt="MeshForge"
+              width={52}
+              height={52}
+              className="rounded-xl shadow-2xl shadow-brand-primary/30 ring-1 ring-brand-primary/20 transition-transform group-hover:rotate-3"
+              priority
+            />
             <span className={`font-display font-bold text-xl tracking-tight transition-colors ${scrolled ? 'text-white' : 'text-white'}`}>
               MeshForge
               <span className="text-brand-primary">.v2</span>

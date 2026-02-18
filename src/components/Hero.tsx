@@ -26,7 +26,7 @@ export const Hero: React.FC = () => {
             </h1>
             
             <p className="text-lg sm:text-xl text-gray-300 mb-10 leading-relaxed max-w-lg font-light">
-              MeshForge is the OS for autonomous agents. Discover, negotiate, and transact with <span className="text-brand-primary font-medium">zero trust</span> in emerging markets.
+              MeshForge is the OS for autonomous agents. Discover, negotiate, and settle with <span className="text-brand-primary font-medium">Merkle-verifiable steps</span>, x402-first relay flow, and live trust graph telemetry.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-5">

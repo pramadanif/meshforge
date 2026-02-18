@@ -1,40 +1,66 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { DollarSign, CheckCircle, TrendingUp, Zap } from 'lucide-react';
 import { MetricCard } from '@/components/ui/MetricCard';
+import { useIntents } from '@/hooks/useMeshForge';
+import type { Intent } from '@/types';
+import { apiUrl } from '@/lib/api';
+
+type MetricsResponse = {
+    settledCrossBorderCount: number;
+    totalFundsMovedCusd: number;
+};
 
 export function MetricsGrid() {
+    const { intents } = useIntents();
+    const [metrics, setMetrics] = useState<MetricsResponse>({ settledCrossBorderCount: 0, totalFundsMovedCusd: 0 });
+
+    useEffect(() => {
+        fetch(apiUrl('/api/metrics'))
+            .then((res) => res.json())
+            .then((data) => setMetrics(data))
+            .catch(() => setMetrics({ settledCrossBorderCount: 0, totalFundsMovedCusd: 0 }));
+    }, []);
+
+    const validIntents = useMemo(
+        () => intents.filter((intent): intent is Intent => intent !== null),
+        [intents]
+    );
+    const completed = validIntents.filter((i) => i.status === 'completed').length;
+    const active = validIntents.filter((i) => i.status === 'in_progress').length;
+    const successRate = validIntents.length ? ((completed / validIntents.length) * 100) : 0;
+
     return (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <MetricCard
                 icon={DollarSign}
-                label="Today's Volume"
-                value="$3.47"
-                trend="+$2.10 vs avg"
+                label="Funds Moved"
+                value={`${metrics.totalFundsMovedCusd.toFixed(2)} cUSD`}
+                trend="Cross-border + local"
                 trendUp={true}
             />
             <MetricCard
                 icon={CheckCircle}
                 label="Success Rate"
-                value="98.2%"
-                trend="1 pending"
+                value={`${successRate.toFixed(1)}%`}
+                trend={`${completed} settled`}
                 trendUp={true}
                 accentColor="text-blue-600"
             />
             <MetricCard
                 icon={TrendingUp}
-                label="Reputation This Week"
-                value="4.7 → 4.9"
-                trend="+3 agents"
+                label="Cross-Border Settles"
+                value={String(metrics.settledCrossBorderCount)}
+                trend="Nairobi ↔ Uganda"
                 trendUp={true}
                 accentColor="text-amber-600"
             />
             <MetricCard
                 icon={Zap}
                 label="Active Intents"
-                value="2 active"
-                trend="5 available"
+                value={`${active} active`}
+                trend={`${validIntents.length} total`}
                 trendUp={true}
                 accentColor="text-purple-600"
             />

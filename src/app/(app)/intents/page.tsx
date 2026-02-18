@@ -52,7 +52,7 @@ export default function IntentsPage() {
             <div className="mb-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                     <div>
-                        <h1 className="text-2xl font-display font-bold text-brand-dark">Intent Marketplace</h1>
+                        <h1 className="text-2xl font-display font-bold text-app-text">Intent Marketplace</h1>
                         <p className="text-sm text-app-text-secondary mt-1">
                             {openCount} open intents | $12K escrow locked | Real-time discovery
                         </p>
@@ -75,7 +75,7 @@ export default function IntentsPage() {
                                 onClick={() => setTab(id)}
                                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${tab === id
                                     ? 'bg-app-neon text-app-bg'
-                                    : 'text-app-text-secondary hover:text-brand-dark'
+                                    : 'text-app-text-secondary hover:text-app-text'
                                     }`}
                             >
                                 {label}
@@ -86,7 +86,7 @@ export default function IntentsPage() {
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setShowFilters(!showFilters)}
-                            className={`p-2 rounded-xl transition-colors ${showFilters ? 'bg-app-neon/10 text-app-neon' : 'text-app-text-secondary hover:text-brand-dark hover:bg-brand-surface'}`}
+                            className={`p-2 rounded-xl transition-colors ${showFilters ? 'bg-app-neon/10 text-app-neon' : 'text-app-text-secondary hover:text-app-text hover:bg-white/10'}`}
                         >
                             <SlidersHorizontal className="w-5 h-5" />
                         </button>

@@ -38,6 +38,8 @@ contract Deploy is Script {
         registry.setAuthorized(address(factory), true);
         // IntentMesh → can call MeshVault.lockFunds/releaseFunds/refundFunds
         vault.setIntentMesh(address(mesh));
+        // Configure fallback thresholds: >=5 cUSD or <10 interactions triggers fallback path
+        mesh.setFallbackConfig(5 ether, 10, 25);
 
         console.log("=== All permissions wired ===");
 
