@@ -16,7 +16,7 @@ export default function ExecutionHubPage() {
       <div>
         <h1 className="text-2xl font-display font-bold text-app-text">Execution Hub</h1>
         <p className="text-sm text-app-text-secondary mt-1">
-          Lifecycle bergerak hanya dari event on-chain: EscrowLocked → ExecutionStarted → ProofSubmitted → SettlementReleased → SettlementRecorded.
+          Lifecycle advances from on-chain events only: EscrowLocked → ExecutionStarted → ProofSubmitted → SettlementReleased → SettlementRecorded.
         </p>
       </div>
 
@@ -47,7 +47,7 @@ export default function ExecutionHubPage() {
         {isLoading ? (
           <p className="text-sm text-app-text-secondary">Loading on-chain intents...</p>
         ) : validIntents.length === 0 ? (
-          <p className="text-sm text-app-text-secondary">Belum ada intent on-chain.</p>
+          <p className="text-sm text-app-text-secondary">No on-chain intents yet.</p>
         ) : (
           <div className="space-y-3">
             {validIntents.map((intent) => (

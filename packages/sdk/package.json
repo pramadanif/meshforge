@@ -1,13 +1,25 @@
 {
-  "name": "@meshforge/sdk",
-  "version": "1.0.0",
+  "name": "@pram1616/meshforge-sdk",
+  "version": "1.0.2",
   "description": "MeshForge orchestration SDK for autonomous agent intent execution",
+  "keywords": [
+    "meshforge",
+    "sdk",
+    "orchestration",
+    "agents",
+    "intents",
+    "x402",
+    "celo",
+    "viem",
+    "web3"
+  ],
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "CHANGELOG.md"
   ],
   "sideEffects": false,
   "scripts": {

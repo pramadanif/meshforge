@@ -36,7 +36,6 @@ export const Navbar: React.FC = () => {
             />
             <span className={`font-display font-bold text-xl tracking-tight transition-colors ${scrolled ? 'text-white' : 'text-white'}`}>
               MeshForge
-              <span className="text-brand-primary">.v2</span>
             </span>
           </div>
 
