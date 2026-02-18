@@ -1,18 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+function normalizeOrigin(value: string) {
+  return value.trim().replace(/\/+$/, '');
+}
+
 function getAllowedOrigins() {
   const raw = process.env.CORS_ALLOWED_ORIGINS ?? '';
   return raw
     .split(',')
-    .map((origin) => origin.trim())
+    .map((origin) => normalizeOrigin(origin))
     .filter(Boolean);
 }
 
 function resolveOrigin(requestOrigin: string | null, allowedOrigins: string[]) {
   if (!requestOrigin) return allowedOrigins[0] ?? '*';
+  const normalizedRequestOrigin = normalizeOrigin(requestOrigin);
   if (allowedOrigins.includes('*')) return '*';
-  if (allowedOrigins.includes(requestOrigin)) return requestOrigin;
-  return allowedOrigins[0] ?? requestOrigin;
+  if (allowedOrigins.includes(normalizedRequestOrigin)) return normalizedRequestOrigin;
+  return allowedOrigins[0] ?? normalizedRequestOrigin;
 }
 
 function withCorsHeaders(response: NextResponse, origin: string) {
