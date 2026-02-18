@@ -17,11 +17,11 @@ export function MetricCard({ icon: Icon, label, value, trend, trendUp = true, on
     return (
         <div
             onClick={onClick}
-            className="app-card p-6 cursor-pointer group bg-white hover:bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl border-b-2 hover:border-b-4"
+            className="app-card p-6 cursor-pointer group transition-all duration-300 hover:-translate-y-1 hover:shadow-xl border-b-2 hover:border-b-4"
             style={{ borderBottomColor: trendUp ? '#043915' : 'transparent' }} // Subtle hint
         >
             <div className="flex items-start justify-between mb-3">
-                <div className={`p-2.5 rounded-xl bg-gray-50 ${accentColor}`}>
+                <div className={`p-2.5 rounded-xl bg-white/10 ${accentColor}`}>
                     <Icon className="w-5 h-5" />
                 </div>
                 {trend && (
@@ -31,8 +31,8 @@ export function MetricCard({ icon: Icon, label, value, trend, trendUp = true, on
                     </div>
                 )}
             </div>
-            <p className="text-2xl font-bold text-brand-dark mb-1 tracking-tight">{value}</p>
-            <p className="text-xs text-gray-500 font-medium">{label}</p>
+            <p className="text-2xl font-bold text-app-text mb-1 tracking-tight">{value}</p>
+            <p className="text-xs text-app-text-secondary font-medium">{label}</p>
         </div>
     );
 }

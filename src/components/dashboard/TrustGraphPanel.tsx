@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { Network } from 'lucide-react';
+import { apiUrl } from '@/lib/api';
 
 type Node = {
   id: number;
@@ -31,7 +32,7 @@ export function TrustGraphPanel() {
   const [graph, setGraph] = useState<TrustGraphResponse>({ nodes: [], edges: [], activeConnections: 0 });
 
   useEffect(() => {
-    fetch('/api/trust-graph')
+    fetch(apiUrl('/api/trust-graph'))
       .then((res) => res.json())
       .then(setGraph)
       .catch(() => setGraph({ nodes: [], edges: [], activeConnections: 0 }));
@@ -58,14 +59,14 @@ export function TrustGraphPanel() {
   return (
     <div className="app-card p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-bold text-brand-dark flex items-center gap-2">
+        <h3 className="text-base font-bold text-app-text flex items-center gap-2">
           <Network className="w-4 h-4 text-brand-accent" />
           Trust Graph
         </h3>
         <span className="text-xs text-app-text-secondary">{graph.activeConnections} active connections</span>
       </div>
 
-      <div className="rounded-xl border border-app-border bg-white p-3 overflow-x-auto">
+      <div className="rounded-xl border border-app-border bg-white/5 p-3 overflow-x-auto">
         <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
           {graph.edges.map((edge, idx) => {
             const source = nodeMap.get(edge.source);

@@ -5,7 +5,7 @@ import {
   AGENT_WALLET_ABI,
   INTENT_MESH_ABI,
   INTENT_MESH_ADDRESS,
-} from '@/lib/contracts';
+} from './contracts';
 
 export interface MeshForgeSdk {
   getAgentWallet(controller: `0x${string}`): Promise<`0x${string}` | null>;

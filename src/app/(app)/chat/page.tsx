@@ -2,15 +2,46 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Smile, ArrowLeft } from 'lucide-react';
-import { conversations as allConversations } from '@/data/mock';
 import { Conversation, Message } from '@/types';
+import { apiUrl } from '@/lib/api';
 
 export default function ChatPage() {
-    const [selectedConv, setSelectedConv] = useState<Conversation | null>(allConversations[0]);
+    const [conversations, setConversations] = useState<Conversation[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedConv, setSelectedConv] = useState<Conversation | null>(null);
     const [newMessage, setNewMessage] = useState('');
-    const [messages, setMessages] = useState(allConversations[0]?.messages || []);
+    const [messages, setMessages] = useState<Message[]>([]);
     const [showList, setShowList] = useState(true);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        let mounted = true;
+
+        const loadConversations = async () => {
+            try {
+                const res = await fetch(apiUrl('/api/chat'), { cache: 'no-store' });
+                const data = await res.json();
+                if (!mounted) return;
+
+                const rows = (data?.conversations ?? []) as Conversation[];
+                setConversations(rows);
+                if (rows.length > 0) {
+                    setSelectedConv(rows[0]);
+                    setMessages(rows[0].messages ?? []);
+                }
+            } finally {
+                if (mounted) setLoading(false);
+            }
+        };
+
+        loadConversations();
+        const interval = setInterval(loadConversations, 15000);
+
+        return () => {
+            mounted = false;
+            clearInterval(interval);
+        };
+    }, []);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -40,7 +71,7 @@ export default function ChatPage() {
             {/* Conversation List */}
             <div className={`${showList ? 'flex' : 'hidden'} lg:flex flex-col w-full lg:w-80 bg-app-bg border-r border-app-border`}>
                 <div className="p-4 border-b border-app-border">
-                    <h2 className="text-lg font-display font-bold text-brand-dark mb-3">Messages</h2>
+                    <h2 className="text-lg font-display font-bold text-app-text mb-3">Messages</h2>
                     <input
                         type="text"
                         placeholder="Search conversations..."
@@ -48,7 +79,13 @@ export default function ChatPage() {
                     />
                 </div>
                 <div className="flex-1 overflow-y-auto app-scrollbar">
-                    {allConversations.map((conv) => (
+                    {loading && (
+                        <p className="px-4 py-4 text-sm text-app-text-secondary">Loading conversations...</p>
+                    )}
+                    {!loading && conversations.length === 0 && (
+                        <p className="px-4 py-4 text-sm text-app-text-secondary">No live conversations yet. Run indexer and execute intents first.</p>
+                    )}
+                    {conversations.map((conv) => (
                         <button
                             key={conv.id}
                             onClick={() => handleSelectConv(conv)}
@@ -64,8 +101,8 @@ export default function ChatPage() {
                             </div>
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-center justify-between gap-2">
-                                    <p className="text-sm font-semibold text-brand-dark truncate">{conv.agentName}</p>
-                                    <span className="text-[10px] text-app-text-secondary flex-shrink-0">{conv.lastMessageTime}</span>
+                                    <p className="text-sm font-semibold text-app-text truncate">{conv.agentName}</p>
+                                    <span className="text-[10px] text-app-text-secondary flex-shrink-0">{new Date(conv.lastMessageTime).toLocaleTimeString()}</span>
                                 </div>
                                 <p className="text-xs text-app-text-secondary truncate mt-0.5">{conv.lastMessage}</p>
                             </div>
@@ -85,7 +122,7 @@ export default function ChatPage() {
                     <>
                         {/* Chat Header */}
                         <div className="flex items-center gap-3 px-4 py-3 border-b border-app-border">
-                                <button onClick={() => setShowList(true)} className="lg:hidden p-1 text-app-text-secondary hover:text-brand-dark">
+                            <button onClick={() => setShowList(true)} className="lg:hidden p-1 text-app-text-secondary hover:text-app-text">
                                 <ArrowLeft className="w-5 h-5" />
                             </button>
                             <div className="relative">
@@ -96,7 +133,7 @@ export default function ChatPage() {
                                     }`} />
                             </div>
                             <div>
-                                <p className="text-sm font-semibold text-brand-dark">{selectedConv.agentName}</p>
+                                <p className="text-sm font-semibold text-app-text">{selectedConv.agentName}</p>
                                 <p className="text-[10px] text-app-text-secondary capitalize">{selectedConv.agentStatus}</p>
                             </div>
                         </div>
@@ -110,7 +147,7 @@ export default function ChatPage() {
                                         : 'bg-white text-app-text rounded-bl-md border border-app-border/50'
                                         }`}>
                                         <p>{msg.text}</p>
-                                        <p className={`text-[10px] mt-1 ${msg.isOwn ? 'text-app-neon/60' : 'text-app-text-secondary/60'} text-right`}>{msg.timestamp}</p>
+                                        <p className={`text-[10px] mt-1 ${msg.isOwn ? 'text-app-neon/80' : 'text-app-text-secondary/80'} text-right`}>{new Date(msg.timestamp).toLocaleTimeString()}</p>
                                     </div>
                                 </div>
                             ))}
@@ -120,7 +157,7 @@ export default function ChatPage() {
                         {/* Input */}
                         <div className="p-3 border-t border-app-border">
                             <div className="flex items-center gap-2">
-                                <button className="p-2 text-app-text-secondary hover:text-brand-dark transition-colors">
+                                <button className="p-2 text-app-text-secondary hover:text-app-text transition-colors">
                                     <Smile className="w-5 h-5" />
                                 </button>
                                 <input
@@ -143,7 +180,7 @@ export default function ChatPage() {
                     </>
                 ) : (
                     <div className="flex-1 flex items-center justify-center">
-                        <p className="text-app-text-secondary">Select a conversation to start chatting</p>
+                        <p className="text-app-text-secondary">Select a live conversation to start chatting</p>
                     </div>
                 )}
             </div>

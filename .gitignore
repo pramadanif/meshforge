@@ -9,6 +9,8 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+packages/sdk/dist
+packages/sdk/node_modules
 
 # testing
 /coverage

@@ -5,6 +5,7 @@ import { DollarSign, CheckCircle, TrendingUp, Zap } from 'lucide-react';
 import { MetricCard } from '@/components/ui/MetricCard';
 import { useIntents } from '@/hooks/useMeshForge';
 import type { Intent } from '@/types';
+import { apiUrl } from '@/lib/api';
 
 type MetricsResponse = {
     settledCrossBorderCount: number;
@@ -16,7 +17,7 @@ export function MetricsGrid() {
     const [metrics, setMetrics] = useState<MetricsResponse>({ settledCrossBorderCount: 0, totalFundsMovedCusd: 0 });
 
     useEffect(() => {
-        fetch('/api/metrics')
+        fetch(apiUrl('/api/metrics'))
             .then((res) => res.json())
             .then((data) => setMetrics(data))
             .catch(() => setMetrics({ settledCrossBorderCount: 0, totalFundsMovedCusd: 0 }));

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Search, Bell } from 'lucide-react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
@@ -12,9 +13,14 @@ export function AppHeader() {
         <header className="sticky top-0 z-40 h-20 app-glass flex items-center px-4 lg:px-8 shadow-sm transition-all duration-300">
             {/* Logo */}
             <Link href="/dashboard" className="flex items-center gap-2.5 mr-6 group flex-shrink-0">
-                <div className="w-8 h-8 bg-brand-dark rounded-lg flex items-center justify-center shadow-lg shadow-brand-dark/20 transition-transform group-hover:rotate-3">
-                    <span className="text-brand-primary font-display font-extrabold text-lg">M</span>
-                </div>
+                <Image
+                    src="/meshforge.png"
+                    alt="MeshForge"
+                    width={44}
+                    height={44}
+                    className="rounded-lg shadow-2xl shadow-brand-primary/20 ring-1 ring-brand-primary/15 transition-transform group-hover:rotate-3"
+                    priority
+                />
                 <span className="font-display font-bold text-base text-white hidden sm:inline">
                     MeshForge<span className="text-brand-primary">.v2</span>
                 </span>

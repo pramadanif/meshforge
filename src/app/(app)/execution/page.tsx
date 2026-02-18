@@ -14,7 +14,7 @@ export default function ExecutionHubPage() {
   return (
     <div className="p-4 lg:p-6 max-w-6xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-display font-bold text-brand-dark">Execution Hub</h1>
+        <h1 className="text-2xl font-display font-bold text-app-text">Execution Hub</h1>
         <p className="text-sm text-app-text-secondary mt-1">
           Lifecycle bergerak hanya dari event on-chain: EscrowLocked → ExecutionStarted → ProofSubmitted → SettlementReleased → SettlementRecorded.
         </p>
@@ -25,24 +25,24 @@ export default function ExecutionHubPage() {
           <div className="flex items-center gap-2 text-app-text-secondary text-sm mb-2">
             <Activity className="w-4 h-4" /> Active Executions
           </div>
-          <p className="text-2xl font-bold text-brand-dark">{inProgress.length}</p>
+          <p className="text-2xl font-bold text-app-text">{inProgress.length}</p>
         </div>
         <div className="app-card p-5">
           <div className="flex items-center gap-2 text-app-text-secondary text-sm mb-2">
             <CheckCircle2 className="w-4 h-4" /> Settled Intents
           </div>
-          <p className="text-2xl font-bold text-brand-dark">{completed.length}</p>
+          <p className="text-2xl font-bold text-app-text">{completed.length}</p>
         </div>
         <div className="app-card p-5">
           <div className="flex items-center gap-2 text-app-text-secondary text-sm mb-2">
             <CircleDollarSign className="w-4 h-4" /> On-chain Intents
           </div>
-          <p className="text-2xl font-bold text-brand-dark">{validIntents.length}</p>
+          <p className="text-2xl font-bold text-app-text">{validIntents.length}</p>
         </div>
       </div>
 
       <div className="app-card p-5">
-        <h2 className="text-lg font-bold text-brand-dark mb-4">Tracked Intents</h2>
+        <h2 className="text-lg font-bold text-app-text mb-4">Tracked Intents</h2>
 
         {isLoading ? (
           <p className="text-sm text-app-text-secondary">Loading on-chain intents...</p>
@@ -58,7 +58,7 @@ export default function ExecutionHubPage() {
                 </div>
                 <Link
                   href={`/execution/${intent.id}`}
-                  className="inline-flex items-center gap-1 text-sm font-semibold text-brand-dark hover:text-brand-accent"
+                  className="inline-flex items-center gap-1 text-sm font-semibold text-brand-dark hover:text-brand-primary"
                 >
                   Open <ArrowRight className="w-4 h-4" />
                 </Link>

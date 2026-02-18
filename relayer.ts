@@ -9,10 +9,18 @@ import {
 import { privateKeyToAccount } from 'viem/accounts';
 import { celoSepolia } from 'viem/chains';
 
+const readEnv = (...keys: string[]) => {
+  for (const key of keys) {
+    const value = process.env[key]?.trim();
+    if (value) return value;
+  }
+  return undefined;
+};
+
 const intentMeshAddress = (process.env.INTENT_MESH_ADDRESS ?? '0x7Bd4CBd578a612b6901101aFeBD855FBfa81Ab1b') as `0x${string}`;
 const relayerPrivateKey = process.env.RELAYER_PRIVATE_KEY as `0x${string}`;
-const x402Endpoint = process.env.THIRDWEB_X402_ENDPOINT ?? process.env.X402_ENDPOINT;
-const x402ApiKey = process.env.THIRDWEB_X402_API_KEY ?? process.env.X402_API_KEY;
+const x402Endpoint = readEnv('THIRDWEB_X402_ENDPOINT', 'X402_ENDPOINT');
+const x402ApiKey = readEnv('THIRDWEB_X402_API_KEY', 'X402_API_KEY');
 const requireX402 = (process.env.REQUIRE_X402 ?? 'true') === 'true';
 
 if (!intentMeshAddress || !relayerPrivateKey) {
