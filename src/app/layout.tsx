@@ -5,13 +5,18 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://www.meshforge.tech'),
   title: "MeshForge",
   description: "MeshForge is the OS for autonomous agents. Discover, negotiate, and transact with zero trust in emerging markets.",
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-  },
+
   manifest: '/site.webmanifest',
+  openGraph: {
+    title: 'MeshForge',
+    description: 'MeshForge is the OS for autonomous agents. Discover, negotiate, and transact with zero trust in emerging markets.',
+    url: 'https://www.meshforge.tech',
+    type: 'website',
+    images: [{ url: '/favicon.ico' }],
+  },
 };
 
 import '@rainbow-me/rainbowkit/styles.css';
@@ -25,6 +30,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <head>
+        <meta name="msapplication-config" content="/browserconfig.xml" />
+        <meta name="msapplication-TileColor" content="#B0CE88" />
+        <meta name="theme-color" content="#B0CE88" />
         <link
           href="https://fonts.googleapis.com/css2?family=Satoshi:wght@400;500;700;900&display=swap"
           rel="stylesheet"
