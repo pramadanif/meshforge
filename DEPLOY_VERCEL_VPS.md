@@ -220,10 +220,23 @@ NEXT_PUBLIC_AGENT_REGISTRY_ADDRESS=0x32a6F7e395248e9924Cee3CcBaf8dde08Cd13b05
 NEXT_PUBLIC_AGENT_FACTORY_ADDRESS=0xB7c78ceCB25a1c40b3fa3382bAf3F34c9b5bdD66
 NEXT_PUBLIC_MESH_VAULT_ADDRESS=0xBE2bcf983b84c030b0C851989aDF351816fA21D2
 NEXT_PUBLIC_THIRDWEB_CLIENT_ID=b24cd7ca0797f41ffb73796f43f1fbd7
-NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=b24cd7ca0797f41ffb73796f43f1fbd7
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=c96d0c5727fb48b82f4bb0fe07b94717
 ```
 
 Redeploy Vercel setelah isi env.
+
+### Jika build Vercel gagal karena peer dependency (`wagmi` vs `rainbowkit`)
+
+Repo ini sudah menyertakan:
+
+- `.npmrc` dengan `legacy-peer-deps=true`
+- `vercel.json` dengan `installCommand: npm install --legacy-peer-deps`
+
+Pastikan Vercel tidak override install command di UI. Jika kamu set manual di UI, gunakan:
+
+```bash
+npm install --legacy-peer-deps
+```
 
 ---
 

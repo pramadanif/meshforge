@@ -22,7 +22,7 @@ export function AppHeader() {
                     priority
                 />
                 <span className="font-display font-bold text-base text-white hidden sm:inline">
-                    MeshForge<span className="text-brand-primary">.v2</span>
+                    MeshForge
                 </span>
             </Link>
 
