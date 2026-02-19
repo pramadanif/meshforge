@@ -21,12 +21,14 @@ export function CreateIntentModal({ isOpen, onClose }: CreateIntentModalProps) {
         minReputation: '4.0',
     });
     const [submitted, setSubmitted] = useState(false);
+    const [localError, setLocalError] = useState<string | null>(null);
 
     const { createIntent, hash, isPending, error } = useMeshForge();
 
     const handleNext = () => step < 4 && setStep(step + 1);
     const handleBack = () => step > 1 && setStep(step - 1);
     const handleBroadcast = async () => {
+        setLocalError(null);
         try {
             await createIntent(
                 formData.description, // title (using desc as title for now or vice versa)
@@ -37,12 +39,15 @@ export function CreateIntentModal({ isOpen, onClose }: CreateIntentModalProps) {
             );
             setSubmitted(true);
         } catch (e) {
+            const message = e instanceof Error ? e.message : 'Failed to broadcast intent';
+            setLocalError(message);
             console.error(e);
         }
     };
     const handleReset = () => {
         setStep(1);
         setSubmitted(false);
+        setLocalError(null);
         setFormData({ description: '', location: '', deadline: '15', amount: '0.85', skills: ['Fast Delivery'], minReputation: '4.0' });
         onClose();
     };
@@ -245,6 +250,11 @@ export function CreateIntentModal({ isOpen, onClose }: CreateIntentModalProps) {
             )}
 
             {/* Navigation */}
+            {(localError || error) && (
+                <div className="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                    {localError ?? error?.message}
+                </div>
+            )}
             <div className="flex items-center justify-between mt-6 pt-4 border-t border-app-border">
                 {step > 1 ? (
                     <button onClick={handleBack} className="flex items-center gap-2 px-4 py-2 text-sm text-app-text-secondary hover:text-white transition-colors">

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useAccount, useReadContract, useWriteContract, useReadContracts } from 'wagmi';
+import { useAccount, useReadContract, useWriteContract, useReadContracts, usePublicClient } from 'wagmi';
 import {
     AGENT_FACTORY_ABI,
     AGENT_FACTORY_ADDRESS,
@@ -35,6 +35,7 @@ type IntentMeshArgs =
 
 export function useMeshForge() {
     const { address } = useAccount();
+    const publicClient = usePublicClient();
     const { writeContractAsync, data: hash, error, isPending } = useWriteContract();
 
     const { data: agentWalletAddress } = useReadContract({
@@ -51,13 +52,55 @@ export function useMeshForge() {
         ? agentWalletAddress
         : null;
 
+    const readAgentWallet = async () => {
+        if (!address || !publicClient) return null;
+
+        const wallet = await publicClient.readContract({
+            address: AGENT_FACTORY_ADDRESS,
+            abi: AGENT_FACTORY_ABI,
+            functionName: 'controllerToWallet',
+            args: [address],
+        });
+
+        if (!wallet || wallet === '0x0000000000000000000000000000000000000000') {
+            return null;
+        }
+
+        return wallet;
+    };
+
+    const ensureAgentWallet = async () => {
+        if (!address) {
+            throw new Error('Connect wallet first.');
+        }
+
+        const existing = await readAgentWallet();
+        if (existing) return existing;
+
+        const createTxHash = await writeContractAsync({
+            address: AGENT_FACTORY_ADDRESS,
+            abi: AGENT_FACTORY_ABI,
+            functionName: 'createAgent',
+            args: ['ipfs://meshforge-agent-default-metadata.json'],
+        });
+
+        if (!publicClient) {
+            throw new Error('Public client unavailable. Please refresh and retry.');
+        }
+
+        await publicClient.waitForTransactionReceipt({ hash: createTxHash });
+
+        const created = await readAgentWallet();
+        if (created) return created;
+
+        throw new Error('AgentWallet not detected after creation. Open Account page and retry.');
+    };
+
     const executeViaAgentWallet = async (
         functionName: IntentMeshFunctionName,
         args: IntentMeshArgs
     ) => {
-        if (!resolvedAgentWallet) {
-            throw new Error('No AgentWallet found for connected controller. Create your agent first.');
-        }
+        const wallet = await ensureAgentWallet();
 
         const calldata = encodeFunctionData({
             abi: INTENT_MESH_ABI,
@@ -66,7 +109,7 @@ export function useMeshForge() {
         });
 
         return writeContractAsync({
-            address: resolvedAgentWallet,
+            address: wallet,
             abi: AGENT_WALLET_ABI,
             functionName: 'execute',
             args: [INTENT_MESH_ADDRESS, calldata],
